@@ -21,23 +21,23 @@ classdef (Abstract) DynamicalSystem
 
     methods (Abstract)
         ode(obj,x,u,w);%continuous time
-        setLinear();
+        cons(obj,x,u);
     end
 
     methods
         % Constructor
-        function obj = DynamicalSystem(nx, nu, dt)
+        function obj = DynamicalSystem(nx, nu,nw, dt)
             if nargin > 0
                 obj.nx = nx;
                 obj.nu = nu;
                 obj.nw = nw;
                 obj.dt = dt;
-                obj.linear = obj.setLinear();
+                parameters = struct;
             end
         end
         function x_p = ddyn(obj,x,u) %discretization of the dynamical system
 
-            integrator = obj.integrator;
+            integrator = 'rk4';
             h = obj.dt;
             switch integrator
                 case 'single'
@@ -60,12 +60,18 @@ classdef (Abstract) DynamicalSystem
         end
 
         function A = A(obj,x,u) %state matric of the discrete time linearized dynamics
+            import casadi.*
             x_fun = casadi.SX.sym('x',obj.nx);
             u_fun = casadi.SX.sym('u',obj.nu);
             var_fun = [x_fun;u_fun];
-            A = casadi.jacobian(obj.ddyn(x_fun,u_fun), x_fun);
+            A = jacobian(obj.ddyn(x_fun,u_fun), x_fun);
             A_fun = casadi.Function('A_fun',{var_fun},{A});
             A = A_fun([x;u]);
+        end
+        function A_sparsity = A_S(obj)
+            x = casadi.SX.sym('x',obj.nx);
+            u = casadi.SX.sym('u',obj.nu);
+            A_sparsity = obj.A(x_fun,u_fun).sparsity();
         end
 
         function B = B(obj,x,u) %input matrix of the discrete time linearized dynamics
@@ -76,8 +82,41 @@ classdef (Abstract) DynamicalSystem
             B_fun = casadi.Function('B_fun',{var_fun},{B});
             B = B_fun([x;u]);
         end
+        function B_sparsity = B_S(obj)
+            x = casadi.SX.sym('x',obj.nx);
+            u = casadi.SX.sym('u',obj.nu);
+            B_sparsity = obj.B(x_fun,u_fun).sparsity();
+        end
 
-        function G = G(obj,x,u)
+        function C = C(obj,x,u)
+            x_fun = casadi.SX.sym('x',obj.nx);
+            u_fun = casadi.SX.sym('u',obj.nu);
+            var_fun = [x_fun;u_fun];
+            C = casadi.jacobian(obj.cons(x_fun,u_fun), x_fun);
+            C_fun = casadi.Function('C_fun',{var_fun},{C});
+            C = C_fun([x;u]);
+        end
+        function C_sparsity = C_S(obj)
+            x_fun = casadi.SX.sym('x',obj.nx);
+            u_fun = casadi.SX.sym('u',obj.nu);
+            C_sparsity = obj.C(x_fun,u_fun).sparsity();
+        end
+
+        function D = D(obj,x,u)
+            x_fun = casadi.SX.sym('x',obj.nx);
+            u_fun = casadi.SX.sym('u',obj.nu);
+            var_fun = [x_fun;u_fun];
+            D = casadi.jacobian(obj.cons(x_fun,u_fun), U_fun);
+            D_fun = casadi.Function('C_fun',{var_fun},{D});
+            D = D_fun([x;u]);
+        end
+        
+        function D_sparsity = D_S(obj)
+            x_fun = casadi.SX.sym('x',obj.nx);
+            u_fun = casadi.SX.sym('u',obj.nu);
+            D_sparsity = obj.C(x_fun,u_fun).sparsity();
+        end
+        function G = G(obj,x,u) % derivative wrt w
             %TODO
         end
         % add constraints

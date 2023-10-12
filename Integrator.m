@@ -20,11 +20,6 @@
 classdef Integrator < DynamicalSystem
 
     properties
-        nx = 2; % number of state
-        nu = 1; % number of input
-        ni = 6;
-        nw = 2;
-        
         
         A = [1,1;0,1];
         B = [0.5;1];
@@ -37,8 +32,6 @@ classdef Integrator < DynamicalSystem
         
         Bw;
         
-        N = 10;
-        dt;
         
         Q_cost;
         R_cost;
@@ -50,6 +43,11 @@ classdef Integrator < DynamicalSystem
     
     methods
         function obj = Integrator()
+            obj.nx=2;
+            obj.nu=1;
+            obj.ni = 6;
+            obj.nw=2;
+
             obj.Bw = 0.3*eye(obj.nx);
             obj.Q_cost = eye(obj.nx);
             obj.R_cost = 100*eye(obj.nu);
