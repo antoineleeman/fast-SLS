@@ -63,13 +63,13 @@ N = 3;
 bo = MX.sym('bo',1,1);
 
 options = struct;
-options.hpipm.iter_max = 100;
-options.hpipm.res_g_max = 1e-10;
-options.hpipm.res_b_max = 1e-10;
-options.hpipm.res_d_max = 1e-10;
-options.hpipm.res_m_max = 1e-10;
+% options.hpipm.iter_max = 100;
+% options.hpipm.res_g_max = 1e-10;
+% options.hpipm.res_b_max = 1e-10;
+% options.hpipm.res_d_max = 1e-10;
+% options.hpipm.res_m_max = 1e-10;
 
-solver = qpsol('solver', 'hpipm', struct('a',A.sparsity(), 'h', H.sparsity()),options);
+solver = conic('solver', 'qpoases', struct('a',A.sparsity(), 'h', H.sparsity()),options);
 
 g = [1;1;0.2;0.4;1;0.5;0.3;1;0.6;1;1;0.7];
 lbg =[0;0;0;-2;-2;0;0;-2;0;-2;-2];

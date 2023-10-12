@@ -17,7 +17,7 @@
 %}
 % Link: https://arxiv.org/abs/2212.02111
 % -----------------------------------------------------------------------------
-classdef Integrator
+classdef Integrator < DynamicalSystem
 
     properties
         nx = 2; % number of state
@@ -25,8 +25,6 @@ classdef Integrator
         ni = 6;
         nw = 2;
         
-        x0 = [0;0];
-        xf = [0;0];
         
         A = [1,1;0,1];
         B = [0.5;1];
