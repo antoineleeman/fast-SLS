@@ -77,4 +77,8 @@ ubg = [0;0;0;2;2;0;0;2;0;2;2];
 lbx = [0.5;0.2;-1;-1;-1;-1;-1;-1;-1;-1;-1;-1];
 ubx = [0.5;0.2; 1; 1; 1; 1; 1; 1; 1; 1; 1; bo];
 
-sol = solver('a',A,'h',H,'lba',lbg,'uba',ubg,'g',g,'lbx',lbx,'ubx',ubx);
+tic
+% sol = solver('a',A,'h',H,'lba',lbg,'uba',ubg,'g',g,'lbx',lbx,'ubx',ubx);
+%sol = solver('a',A,'h',H,'g',g,'lbx',lbx,'ubx',ubx);
+sol = solver('a',A,'h',H,'lba',lbg,'uba',ubg,'g',g);
+toc

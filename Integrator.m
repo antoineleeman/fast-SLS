@@ -28,6 +28,7 @@ classdef Integrator < DynamicalSystem
             obj.nx=2;
             obj.nu=1;
             obj.ni = 6;
+            obj.ni_x =4;
             obj.nw = 2;
             obj.dt =1;
 
@@ -44,6 +45,7 @@ classdef Integrator < DynamicalSystem
         end
 
         function [g,f] = cons(obj,x,u)
+        % add an if statement for linear constraints
             x_max = 5;
             u_max = 3;
             C = [1,0;...
@@ -57,6 +59,17 @@ classdef Integrator < DynamicalSystem
             f =[x_max;x_max;x_max;x_max;u_max ;u_max];
             g = C*x+D*u-f;
         end
+        function [g,f] = cons_f(obj,x,u)
+            x_max = 5;
+            C = [1,0;...
+                -1,0;...
+                0,1;...
+                0,-1];
+            f =[x_max;x_max;x_max;x_max];
+            g = C*x-f;
+        end
+
+
     end
 end
 
