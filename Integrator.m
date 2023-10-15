@@ -20,25 +20,7 @@
 classdef Integrator < DynamicalSystem
 
     properties
-        
-        A = [1,1;0,1];
-        B = [0.5;1];
-        
-        F_x;
-        b_x; 
-        
-        F_u;
-        b_u; 
-        
-        Bw;
-        
-        
-        Q_cost;
-        R_cost;
-        
-        x_max;
-        u_max;
-        
+                
     end
     
     methods
@@ -46,23 +28,35 @@ classdef Integrator < DynamicalSystem
             obj.nx=2;
             obj.nu=1;
             obj.ni = 6;
-            obj.nw=2;
+            obj.nw = 2;
+            obj.dt =1;
 
-            obj.Bw = 0.3*eye(obj.nx);
-            obj.Q_cost = eye(obj.nx);
-            obj.R_cost = 100*eye(obj.nu);
-            obj.x_max = 5;
-            obj.u_max = 3;
-            C = [0,0,-1;0,0,1;1,0,0;-1,0,0;0,1,0;0,-1,0];
-            c = [obj.u_max ;obj.u_max ;obj.x_max;obj.x_max;obj.x_max;obj.x_max];
-            obj.F_x = C(3:end,1:obj.nx);
-            obj.b_x = c(3:end);
-            
-            obj.F_u = C(1:2,obj.nx+1:end);
-            obj.b_u = c(1:2);
         end
-        
-        
+        function dt = ode(obj,x,u) % equation of motion of the dynamical system in continuous time (x_dot = ode(x,u) )
+            A = [1,1;...
+                0,1];
+            B = [0.5;1];
+            dt = A*x+B*u;
+        end
+
+        function x_p = ddyn(obj,x,u) %discretization of the dynamical system
+            x_p = obj.ode(x,u); %ode already in discrete time
+        end
+
+        function [g,f] = cons(obj,x,u)
+            x_max = 5;
+            u_max = 3;
+            C = [1,0;...
+                -1,0;...
+                0,1;...
+                0,-1;
+                zeros(2)];
+            D = [zeros(4,1);
+                1;
+                -1];
+            f =[x_max;x_max;x_max;x_max;u_max ;u_max];
+            g = C*x+D*u-f;
+        end
     end
 end
 

@@ -15,17 +15,33 @@ classdef KKT_SLS < OCP
             obj.initialize_solver_forward('qpoases');
         end
         
-        function initialize_solver_forward(solver)
+        function initialize_solver_forward(obj,solver)
+            import casadi.*
             m=obj.m;
-            S_cons = [m.A_S(), m.B_S(), sparsify(eye(m.nx)),...
-                m.C_S(), m.D_S, sparsify(zeros(m.nx))];
-            A_mat = kron(m.N, S_cons);
+            x = casadi.SX.sym('x',m.nx);
+            u = casadi.SX.sym('u',m.nu);
+            S_cons = [m.A(x,u), m.B(x,u), eye(m.nx) ;...
+                m.C(x,u), m.D(x,u), zeros(m.ni,m.nx)];
+
+            % S_cons_ = blkdiag(eye(m.nx),zeros(m.ni,m.nu) );
+            % Z_block = kron(diag(ones(1,obj.N),-1), eye(m.nx+m.nu));
+            % 
+            % A_mat = blkdiag(kron(eye(obj.N), S_cons),zeros(m.nx)) + kron(eye(obj.N), S_cons_)*Z_block';% WRONG!!
+            % A_mat = DM(sparse(A_mat));
+            % 
+            A_mat = zeros(0,m.nx);
+            for kk=1:obj.N-1
+                A_mat = [[A_mat, zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx)]; zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu)), S_cons ];
+            end
+            A_mat = sparsify(DM(A_mat));
 
             S_cost = blkdiag(obj.Q, obj.R); % todo: add terminal cost
-            H_mat = kron(m.N, S_cost);
+
+            H_mat = blkdiag(kron(eye(obj.N-1), S_cost),obj.Qf);
+            H_mat = DM(sparse(H_mat));
 
             options =struct;
-            obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h', H_mat.sparsity()),options);            
+            obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',H_mat.sparsity()),options);            
         end
         
         function [x_bar, u_bar, lambda, mu] = forward_solve(obj)
