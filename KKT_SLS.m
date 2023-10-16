@@ -11,6 +11,8 @@ classdef KKT_SLS < OCP
         H_mat; % could be made a function, for instance for non-qaudratic cost
         H_mat_sparsity;
         lbg;
+        lbx_fun;
+        ubx_fun;
     end
     
     methods
@@ -65,12 +67,19 @@ classdef KKT_SLS < OCP
             obj.H_mat_sparsity = obj.H_mat.sparsity();
             options = struct;
             obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',obj.H_mat_sparsity),options);
-            obj.lbg = zeros((N)*(ni+nx),1);
+            %obj.lbg = -casadi.SX.inf((N)*(ni+nx),1);
+            obj.lbg = [kron(ones(obj.N,1), [zeros(m.nx,1);  -casadi.DM.inf(ni,1)])];
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
 
+            x0 = casadi.SX.sym('x0',nx);
+            ubx = [x0; casadi.DM.inf(N*(nx+nu),1)];
+            lbx = [x0; -casadi.DM.inf(N*(nx+nu),1)];
+
+            obj.ubx_fun= casadi.Function('ubx_fun',{x0},{ubx});
+            obj.lbx_fun= casadi.Function('lbx_fun',{x0},{lbx});
         end
 
-        function [x_bar, u_bar, lambda, mu] = forward_solve(obj)
+        function [x_bar, u_bar, lambda_bar, mu_bar] = forward_solve(obj,x0)
             import casadi.*
             m=obj.m;
             N = obj.N;
@@ -78,7 +87,11 @@ classdef KKT_SLS < OCP
             nu = m.nu;
 
             A_current = obj.A_mat_fun(obj.current_nominal);
-            sol = obj.solver_forward('a',A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.current_bo,'g',obj.current_adj_corr);
+            sol = obj.solver_forward('a',A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.current_bo,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
+            
+            y_sol = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);
+            x_bar = y_sol(1:nx,:);
+            u_bar = ysol(nx+1:end, 1:N);
             %does it speed up to add constraints on x and u?
             % need to add the initial conditions!
         end
