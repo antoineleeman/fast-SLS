@@ -69,7 +69,7 @@ classdef KKT_SLS < OCP
             jj=1;
             A_mat = zeros(0,m.nx);
 
-            for kk=1:obj.N
+            for kk=1:obj.N-1
                 var = y(jj:jj+nx+nu-1 );
                 jj = jj+nx+nu;
                 x = var(1:nx);
@@ -79,13 +79,12 @@ classdef KKT_SLS < OCP
                 %columnPadding = zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
                 %rowPadding = zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
                 %A_mat = [A_mat, columnPadding; rowPadding, S_fun];
-                % Padding matrices should also be symbolic, not numerical.
-    columnPadding = casadi.SX.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
-    rowPadding = casadi.SX.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
-    
-    % Use vertcat and horzcat for concatenation of symbolic expressions.
-    A_mat = vertcat(horzcat(A_mat, columnPadding), ...
-                           horzcat(rowPadding, S_fun(var)));
+                columnPadding = casadi.SX.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
+                rowPadding = casadi.SX.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
+
+                % Use vertcat and horzcat for concatenation of symbolic expressions.
+                A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
+                    horzcat(rowPadding, S_fun(var)))); %double code!
             end
             A_mat_fun = casadi.Function('A_mat_fun',{y},{A_mat}) %% too many nz !!
 
