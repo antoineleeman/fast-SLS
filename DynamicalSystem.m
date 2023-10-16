@@ -95,6 +95,14 @@ classdef (Abstract) DynamicalSystem
             C = C_fun([x;u]);
         end
 
+        function Cf = Cf(obj,x)
+            import casadi.*
+
+            x_fun = casadi.SX.sym('x',obj.nx);
+            Cf = jacobian(obj.cons_f(x_fun), x_fun);
+            C_fun = casadi.Function('C_fun',{x_fun},{Cf});
+            Cf = C_fun(x);
+        end
 
 
         function D = D(obj,x,u)
