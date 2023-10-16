@@ -13,7 +13,6 @@ classdef (Abstract) DynamicalSystem
         nw; % size of the disturbance
         ni; % size of the constraints
         ni_x; %number of terminal constraint
-        x0; % initial state
         dt; % time step
         parameters;
         integrator;
