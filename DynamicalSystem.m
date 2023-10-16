@@ -71,11 +71,6 @@ classdef (Abstract) DynamicalSystem
             A = A_fun([x;u]);
         end
 
-        function A_sparsity = A_S(obj)
-            x_fun = casadi.SX.sym('x',obj.nx);
-            u_fun = casadi.SX.sym('u',obj.nu);
-            A_sparsity = obj.A(x_fun,u_fun).sparsity();
-        end
 
         function B = B(obj,x,u) %input matrix of the discrete time linearized dynamics
                         import casadi.*
@@ -88,11 +83,7 @@ classdef (Abstract) DynamicalSystem
             B = B_fun([x;u]);
         end
 
-        function B_sparsity = B_S(obj)
-            x_fun = casadi.SX.sym('x',obj.nx);
-            u_fun = casadi.SX.sym('u',obj.nu);
-            B_sparsity = obj.B(x_fun,u_fun).sparsity();
-        end
+
 
         function C = C(obj,x,u)
             import casadi.*
@@ -105,11 +96,7 @@ classdef (Abstract) DynamicalSystem
             C = C_fun([x;u]);
         end
 
-        function C_sparsity = C_S(obj)
-            x_fun = casadi.SX.sym('x',obj.nx);
-            u_fun = casadi.SX.sym('u',obj.nu);
-            C_sparsity = obj.C(x_fun,u_fun).sparsity();
-        end
+
 
         function D = D(obj,x,u)
             import casadi.*
@@ -121,12 +108,7 @@ classdef (Abstract) DynamicalSystem
             D_fun = casadi.Function('D_fun',{var_fun},{D});
             D = D_fun([x;u]);
         end
-        
-        function D_sparsity = D_S(obj)
-            x_fun = casadi.SX.sym('x',obj.nx);
-            u_fun = casadi.SX.sym('u',obj.nu);
-            D_sparsity = obj.D(x_fun,u_fun).sparsity();
-        end
+
         function G = G(obj,x,u) % derivative wrt w
             %TODO
         end

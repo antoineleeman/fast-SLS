@@ -3,10 +3,14 @@ classdef KKT_SLS < OCP
     
     properties
         current_bo;
-        initial_bo; %without constraint tightening, i.e., nominal
+        initial_bo; % without constraint tightening, i.e., nominal
         current_adj_corr;
         solver_forward;
         current_nominal;
+        A_mat_fun;
+        H_mat; % could be made a function, for instance for non-qaudratic cost
+        H_mat_sparsity;
+        lbg;
     end
     
     methods
@@ -23,7 +27,7 @@ classdef KKT_SLS < OCP
             [~,f] = m.cons(x,u);
             [~,f_f] = m.cons_f(x);
             
-            obj.initial_bo = [kron(ones(obj.N-1,1), f); f_f]; %assume time invariant constraints
+            obj.initial_bo = [kron(ones(obj.N-1,1), f); f_f]; %assume time invariant constraints + move to initialization
             obj.current_bo = obj.initial_bo;
         end
         
@@ -32,27 +36,44 @@ classdef KKT_SLS < OCP
             m=obj.m;
             nx = m.nx;
             nu = m.nu;
+            ni = m.ni;
+            ni_x = m.ni_x;
             N = obj.N;
+            y = casadi.SX.sym('y',N*(nx+nu)+nx);
+            jj=1;
 
-            x = casadi.SX.sym('x',nx);
-            u = casadi.SX.sym('u',nu);
-
-            S = obj.blockConstraint(x,u);
             A_mat = zeros(0,m.nx);
-            for kk=1:obj.N-1
-                columnPadding = zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
-                rowPadding = zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
-                A_mat = [A_mat, columnPadding; ...
-                    rowPadding, S ];
+            % for kk=1:N-1
+            %     columnPadding = zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
+            %     rowPadding = zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
+            %     A_mat = [A_mat, columnPadding; ...
+            %         rowPadding, S ];
+            % end
+            % A_mat = sparsify(DM(A_mat));
+
+
+            for kk=1:obj.N-1 % no constraint on last time step
+                var = y(jj:jj+nx+nu-1 );
+                jj = jj+nx+nu;
+                x = var(1:nx);
+                u = var(nx+1:end);
+                S = obj.blockConstraint(x,u);
+                S_fun = casadi.Function('S',{var},{S});
+                columnPadding = casadi.SX.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
+                rowPadding = casadi.SX.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
+                A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
+                    horzcat(rowPadding, S_fun(var))));
             end
-            A_mat = sparsify(DM(A_mat));
+            obj.A_mat_fun = casadi.Function('A_mat_fun',{y},{A_mat});
 
             S_cost = blkdiag(obj.Q, obj.R);
-            H_mat = blkdiag(kron(eye(obj.N-1), S_cost),obj.Qf);
-            H_mat = DM(sparse(H_mat));
+            obj.H_mat = blkdiag(kron(eye(obj.N-1), S_cost),obj.Qf);
+            obj.H_mat = DM(sparse(obj.H_mat));
 
+            obj.H_mat_sparsity = obj.H_mat.sparsity();
             options =struct;
-            obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',H_mat.sparsity()),options);            
+            obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',obj.H_mat_sparsity),options);
+            obj.lbg = zeros((N-1)*ni + ni_x,1);
         end
         
         function [x_bar, u_bar, lambda, mu] = forward_solve(obj)
@@ -61,40 +82,16 @@ classdef KKT_SLS < OCP
             N = obj.N;
             nx = m.nx;
             nu = m.nu;
-            g_current = obj.current_adj_corr; 
-            ubg_current = obj.current_bo;
-            lbg = zeros((obj.N-1)*m.ni + m.ni_x,1);
-            
-            y = casadi.SX.sym('y',N*(nx+nu)+nx);
-            jj=1;
-            A_mat = zeros(0,m.nx);
 
-            for kk=1:obj.N-1
-                var = y(jj:jj+nx+nu-1 );
-                jj = jj+nx+nu;
-                x = var(1:nx);
-                u = var(nx+1:end);
-                S = obj.blockConstraint(x,u);
-                S_fun = casadi.Function('S',{var},{S});
-                %columnPadding = zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
-                %rowPadding = zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
-                %A_mat = [A_mat, columnPadding; rowPadding, S_fun];
-                columnPadding = casadi.SX.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
-                rowPadding = casadi.SX.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
-
-                % Use vertcat and horzcat for concatenation of symbolic expressions.
-                A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
-                    horzcat(rowPadding, S_fun(var)))); %double code!
-            end
-            A_mat_fun = casadi.Function('A_mat_fun',{y},{A_mat}) %% too many nz !!
-
+            A_current = obj.A_mat_fun(obj.current_nominal);
+            sol = obj.solver_forward('a',A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.current_bo,'g',obj.current_adj_corr);
             %does it speed up to add constraints on x and u?
         end
 
         function S_cons = blockConstraint(obj,x,u)
             import casadi.*
             m=obj.m;
-            S_cons = [m.A(x,u), m.B(x,u), eye(m.nx) ;...
+            S_cons = [m.A(x,u), m.B(x,u), -eye(m.nx) ;...
                 m.C(x,u), m.D(x,u), zeros(m.ni,m.nx)];
         end
     end
