@@ -18,7 +18,7 @@ classdef KKT_SLS < OCP
             obj@OCP(N,Q,R,m,x0,Qf);
             obj.current_bo = zeros(m.ni,N);
             obj.current_adj_corr = 0;
-            obj.solver_forward = obj.initialize_solver_forward('qpoases');
+            obj = obj.initialize_solver_forward('qpoases');
 
             import casadi.*
             x = casadi.SX.sym('x',m.nx);
@@ -27,8 +27,9 @@ classdef KKT_SLS < OCP
             [~,f] = m.cons(x,u);
             [~,f_f] = m.cons_f(x);
             
-            obj.initial_bo = [kron(ones(obj.N-1,1), f); f_f]; %assume time invariant constraints + move to initialization
+            obj.initial_bo = [kron(ones(obj.N,1), [zeros(m.nx,1); f])]; %assume time invariant constraints + move to initialization
             obj.current_bo = obj.initial_bo;
+
         end
         
         function obj = initialize_solver_forward(obj,solver)
@@ -39,20 +40,11 @@ classdef KKT_SLS < OCP
             ni = m.ni;
             ni_x = m.ni_x;
             N = obj.N;
-            y = casadi.SX.sym('y',N*(nx+nu)+nx);
+            y = casadi.SX.sym('y',(N+1)*nx+(N)*nu);
             jj=1;
 
             A_mat = zeros(0,m.nx);
-            % for kk=1:N-1
-            %     columnPadding = zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
-            %     rowPadding = zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
-            %     A_mat = [A_mat, columnPadding; ...
-            %         rowPadding, S ];
-            % end
-            % A_mat = sparsify(DM(A_mat));
-
-
-            for kk=1:obj.N-1 % no constraint on last time step
+            for kk=1:obj.N % no constraint on last time step x_N
                 var = y(jj:jj+nx+nu-1 );
                 jj = jj+nx+nu;
                 x = var(1:nx);
@@ -67,15 +59,17 @@ classdef KKT_SLS < OCP
             obj.A_mat_fun = casadi.Function('A_mat_fun',{y},{A_mat});
 
             S_cost = blkdiag(obj.Q, obj.R);
-            obj.H_mat = blkdiag(kron(eye(obj.N-1), S_cost),obj.Qf);
+            obj.H_mat = blkdiag(kron(eye(obj.N), S_cost),obj.Qf);
             obj.H_mat = DM(sparse(obj.H_mat));
 
             obj.H_mat_sparsity = obj.H_mat.sparsity();
-            options =struct;
+            options = struct;
             obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',obj.H_mat_sparsity),options);
-            obj.lbg = zeros((N-1)*ni + ni_x,1);
+            obj.lbg = zeros((N)*(ni+nx),1);
+            obj.current_nominal = zeros(N*(nx+nu)+nx,1);
+
         end
-        
+
         function [x_bar, u_bar, lambda, mu] = forward_solve(obj)
             import casadi.*
             m=obj.m;
@@ -86,6 +80,7 @@ classdef KKT_SLS < OCP
             A_current = obj.A_mat_fun(obj.current_nominal);
             sol = obj.solver_forward('a',A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.current_bo,'g',obj.current_adj_corr);
             %does it speed up to add constraints on x and u?
+            % need to add the initial conditions!
         end
 
         function S_cons = blockConstraint(obj,x,u)
