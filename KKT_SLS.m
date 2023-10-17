@@ -16,6 +16,7 @@ classdef KKT_SLS < OCP
         nominal_ubg;
         lbx_fun;
         ubx_fun;
+        A_current;
 
         Q_reg;
         R_reg;
@@ -62,22 +63,16 @@ classdef KKT_SLS < OCP
             ni = m.ni;
             %ni_x = m.ni_x;
             N = obj.N;
-            y = casadi.SX.sym('y',(N+1)*nx+(N)*nu);
-            jj=1;
-
-            A_mat = zeros(0,nx);
-
             obj.A_dyn_current = cell(1,N);
             obj.B_dyn_current = cell(1,N);
             obj.C_cons_current = cell(1,N);
             obj.D_cons_current = cell(1,N);
 
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
-            current_nominal_mat = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);
+            current_nominal_mat = reshape([obj.current_nominal;zeros(nu,1)], [nx+nu, N+1]);
+            A_mat = zeros(0,nx);
 
             for kk=1:obj.N % no constraint on last time step x_N: could add a equality or box constraint
-                var = y(jj:jj+nx+nu-1 );
-                jj = jj+nx+nu;
                 xkk = current_nominal_mat(1:nx,kk);
                 ukk = current_nominal_mat(nx+1:end,kk);
 
@@ -88,13 +83,15 @@ classdef KKT_SLS < OCP
                 
                 S_fun =[obj.A_dyn_current{kk}, obj.B_dyn_current{kk}, -eye(m.nx) ;...
                 obj.C_cons_current{kk}, obj.D_cons_current{kk}, zeros(m.ni,m.nx)];
-                columnPadding = casadi.SX.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
-                rowPadding = casadi.SX.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
+                columnPadding = casadi.DM.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
+                rowPadding = casadi.DM.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
                 
                 A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
                     horzcat(rowPadding, S_fun)));
                 % affine part in the dynamics?
             end
+            obj.A_current = A_mat;
+
 
             S_cost = blkdiag(obj.Q, obj.R);
             obj.H_mat = blkdiag(kron(eye(obj.N), S_cost),obj.Qf);
@@ -127,10 +124,12 @@ classdef KKT_SLS < OCP
             ni = m.ni;
 
             sol = obj.solver_forward('a',obj.A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.ubg_current,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
-            obj.A_current = obj.A_mat_fun(sol.x);
+            %obj.A_current = obj.A_mat_fun(sol.x);
+            
+            % add update A_current;
             obj.current_nominal = sol.x;
 
-            y_sol = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);
+            y_sol = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);%make this as a function
             x_bar = y_sol(1:nx,:);
             u_bar = y_sol(nx+1:end, 1:N);
 
@@ -152,12 +151,6 @@ classdef KKT_SLS < OCP
             S = cell(N+1,1);
             K = cell(N,1);
 
-            %make is a generic function in the initialization, so that
-            %there is no need to redefine the functions each time.
-            import casadi.*
-            x = casadi.SX.sym('x',m.nx);
-            u = casadi.SX.sym('u',m.nu);
-            var = [x;u];
             C_f = m.Cf(x);
             C_f_fun = casadi.Function('C_f_fun',{x},{C_f});
             
@@ -169,47 +162,46 @@ classdef KKT_SLS < OCP
             D_fun = casadi.Function('D_fun',{var},{D});
 
             y_current = reshape([obj.current_nominal;zeros(nu,1)], [nx+nu, N+1]);
-            xf = y_current(1:nx,end);
+            [x_bar, u_bar] = convert_y_to_xu(obj.current_nominal);
+            
+            xf = x_bar(1:nx,end);
 
             S{N+1} = C_f_fun(xf)' * diag(obj.eta_kj(1:m.ni_x,N)) *C_f_fun(xf)+ obj.Q_reg;
 
             for kk=N:-1:1
-                ykk = y_current(:,kk);
-                xkk = ykk(1:nx);
-                ukk = ykk(1:nu);
+                xkk = x_bar(kk);
+                ukk = u_bar(kk);
 
-                C = C_fun(ykk);
-                D = D_fun(ykk);
+                C = obj.C_cons_current{kk};
+                D = obj.D_cons_current{kk};
 
                 Ck = [C'; D']*diag(obj.eta_kj(:,kk))*[C, D];
 
                 Cxk = Ck(1:nx, 1:nx) + obj.Q_reg;
                 Cuk = Ck(nx+1:end, nx+1:end) + obj.R_reg;
                 % Cxuk missing!
-                A = m.A(xkk,ukk);
-                B = m.B(xkk,ukk);
+                A = obj.A_dyn_current{kk};
+                B = obj.A_dyn_current{kk};
                 K{kk} = -(Cuk+B'*S{kk+1}*B)\(B'*S{kk+1}*A);
                 S{kk} = Cxk + A'*S{kk+1}*A + A'*S{kk+1}*B*K{kk};
             end
-            obj.current_K = K;
-
-            
+            obj.current_K = K;            
         end
         % 
-        % function [obj, beta] = compute_backoff(obj)
-        %     import casadi.*
-        %     m=obj.m;
-        %     N = obj.N;
-        %     nx = m.nx;
-        %     nu = m.nu;
-        %     ni = m.ni;
-        %     Phi_kj = cell(N+1,1);
-        %     Phi_kj{1} = eye(nx);
-        %     for kk=1:N
-        %         Phi_kj{kk+1} = m.A
-        % 
-        %     end
-        % end
+        function [obj, beta] = compute_backoff(obj)
+            import casadi.*
+            m=obj.m;
+            N = obj.N;
+            nx = m.nx;
+            nu = m.nu;
+            ni = m.ni;
+            Phi_kj = cell(N+1,1);
+            Phi_kj{1} = eye(nx);
+            for kk=1:N
+                Phi_kj{kk+1} = m.A
+
+            end
+        end
 
         function S_cons = blockConstraint(obj,x,u)
             import casadi.*
@@ -223,6 +215,15 @@ classdef KKT_SLS < OCP
                 obj.eta_kj(:,kk) = obj.mu_current(kk)./sqrt(obj.beta_kj(:,kk));
             end
         end
+
+        function [x,u] = convert_y_to_xu(obj,y)
+            y_mat = reshape([y;zeros(obj.nu,1)], [obj.nx+obj.nu, obj.N+1]);
+            x = y_mat(1:obj.nx,:);
+            u = y_mat(obj.nx+1:end, 1:obj.N);
+        end
+
+        % function y = convert_xu_to_y(x,u)
+        % end
 
 
     end
