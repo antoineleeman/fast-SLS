@@ -26,6 +26,7 @@ classdef KKT_SLS < OCP
         epsilon;
         eta_kj;
         mu_current;
+        K_current;
     end
     
     methods
@@ -34,7 +35,7 @@ classdef KKT_SLS < OCP
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.current_adj_corr = 0;
             obj.epsilon = 1e-3;
-            obj = obj.initialize_solver_forward('qpoases');
+            obj = obj.initialize_solver_forward('qpoases');% try osqp!
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
             
@@ -126,7 +127,7 @@ classdef KKT_SLS < OCP
             obj.mu_current = mu_bar;
         end
 
-        function [obj, K, beta] = backward_solve(obj) % could be computed using HPIPM! + we are evaluating twice the dynamics
+        function [obj, K] = backward_solve(obj) % could be computed using HPIPM! + we are evaluating twice the dynamics
             import casadi.*
             m=obj.m;
             N = obj.N;
@@ -176,8 +177,24 @@ classdef KKT_SLS < OCP
                 K{kk} = -(Cuk+B'*S{kk+1}*B)\(B'*S{kk+1}*A);
                 S{kk} = Cxk + A'*S{kk+1}*A + A'*S{kk+1}*B*K{kk};
             end
-            disp('here');
+            obj.current_K = K;
 
+            
+        end
+
+        function [obj, beta] = compute_backoff(obj)
+            import casadi.*
+            m=obj.m;
+            N = obj.N;
+            nx = m.nx;
+            nu = m.nu;
+            ni = m.ni;
+            Phi_kj = cell(N+1,1);
+            Phi_kj{1} = eye(nx);
+            for kk=1:N
+                Phi_kj{kk+1} = m.A
+                
+            end
         end
 
         function S_cons = blockConstraint(obj,x,u)
