@@ -6,8 +6,6 @@ classdef KKT_SLS < OCP
         current_adj_corr;
         solver_forward;
         current_nominal;
-        A_mat_fun;
-        A_current;
 
         dh_dyk;
         dh_dxN;
@@ -27,6 +25,11 @@ classdef KKT_SLS < OCP
         eta_kj;
         mu_current;
         K_current;
+
+        A_dyn_current;
+        B_dyn_current;
+        C_cons_current;
+        D_cons_current;
     end
     
     methods
@@ -63,20 +66,35 @@ classdef KKT_SLS < OCP
             jj=1;
 
             A_mat = zeros(0,nx);
+
+            obj.A_dyn_current = cell(1,N);
+            obj.B_dyn_current = cell(1,N);
+            obj.C_cons_current = cell(1,N);
+            obj.D_cons_current = cell(1,N);
+
+            obj.current_nominal = zeros(N*(nx+nu)+nx,1);
+            current_nominal_mat = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);
+
             for kk=1:obj.N % no constraint on last time step x_N: could add a equality or box constraint
                 var = y(jj:jj+nx+nu-1 );
                 jj = jj+nx+nu;
-                x = var(1:nx);
-                u = var(nx+1:end);
-                S = obj.blockConstraint(x,u);
-                S_fun = casadi.Function('S',{var},{S});
+                xkk = current_nominal_mat(1:nx,kk);
+                ukk = current_nominal_mat(nx+1:end,kk);
+
+                obj.A_dyn_current{kk} = m.A(xkk,ukk);
+                obj.B_dyn_current{kk} = m.B(xkk,ukk);
+                obj.C_cons_current{kk} = m.C(xkk,ukk);
+                obj.D_cons_current{kk} = m.D(xkk,ukk);
+                
+                S_fun =[obj.A_dyn_current{kk}, obj.B_dyn_current{kk}, -eye(m.nx) ;...
+                obj.C_cons_current{kk}, obj.D_cons_current{kk}, zeros(m.ni,m.nx)];
                 columnPadding = casadi.SX.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
                 rowPadding = casadi.SX.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
+                
                 A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
-                    horzcat(rowPadding, S_fun(var))));
+                    horzcat(rowPadding, S_fun)));
                 % affine part in the dynamics?
             end
-            obj.A_mat_fun = casadi.Function('A_mat_fun',{y},{A_mat});
 
             S_cost = blkdiag(obj.Q, obj.R);
             obj.H_mat = blkdiag(kron(eye(obj.N), S_cost),obj.Qf);
@@ -86,9 +104,6 @@ classdef KKT_SLS < OCP
             options = struct;
             obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',obj.H_mat_sparsity),options);
             obj.lbg = [kron(ones(obj.N,1), [zeros(m.nx,1);  -casadi.DM.inf(ni,1)])];
-            obj.current_nominal = zeros(N*(nx+nu)+nx,1);
-
-            obj.A_current = obj.A_mat_fun(obj.current_nominal);
 
             x0 = casadi.SX.sym('x0',nx);
             ubx = [x0; casadi.DM.inf(N*(nx+nu),1)];
@@ -96,7 +111,6 @@ classdef KKT_SLS < OCP
 
             obj.ubx_fun= casadi.Function('ubx_fun',{x0},{ubx});
             obj.lbx_fun= casadi.Function('lbx_fun',{x0},{lbx});
-
 
             % initialization of beta
             obj.beta_kj = obj.epsilon.*ones(ni,N);
@@ -181,21 +195,21 @@ classdef KKT_SLS < OCP
 
             
         end
-
-        function [obj, beta] = compute_backoff(obj)
-            import casadi.*
-            m=obj.m;
-            N = obj.N;
-            nx = m.nx;
-            nu = m.nu;
-            ni = m.ni;
-            Phi_kj = cell(N+1,1);
-            Phi_kj{1} = eye(nx);
-            for kk=1:N
-                Phi_kj{kk+1} = m.A
-                
-            end
-        end
+        % 
+        % function [obj, beta] = compute_backoff(obj)
+        %     import casadi.*
+        %     m=obj.m;
+        %     N = obj.N;
+        %     nx = m.nx;
+        %     nu = m.nu;
+        %     ni = m.ni;
+        %     Phi_kj = cell(N+1,1);
+        %     Phi_kj{1} = eye(nx);
+        %     for kk=1:N
+        %         Phi_kj{kk+1} = m.A
+        % 
+        %     end
+        % end
 
         function S_cons = blockConstraint(obj,x,u)
             import casadi.*
