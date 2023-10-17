@@ -76,6 +76,8 @@ classdef KKT_SLS < OCP
                 xkk = current_nominal_mat(1:nx,kk);
                 ukk = current_nominal_mat(nx+1:end,kk);
 
+                % we should not call this function multiple times, but
+                % rather save it for later use.
                 obj.A_dyn_current{kk} = m.A(xkk,ukk);
                 obj.B_dyn_current{kk} = m.B(xkk,ukk);
                 obj.C_cons_current{kk} = m.C(xkk,ukk);
@@ -189,26 +191,32 @@ classdef KKT_SLS < OCP
         end
         % 
         function [obj, beta] = compute_backoff(obj)
-            import casadi.*
             m=obj.m;
             N = obj.N;
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
-            Phi_kj = cell(N+1,1);
-            Phi_kj{1} = eye(nx);
+            Phi_x_kj = cell(N+1,1);
+            Phi_u_kj = cell(N+1,1);
+
+            Phi_x_kj{1} = eye(nx);
             for kk=1:N
-                Phi_kj{kk+1} = m.A
-
+                Phi_u_kj{kk} = obj.K_current{kk}*Phi_x_kj{kk};
+                Phi_x_kj{kk+1} = (obj.A_dyn_current{kk} + obj.B_dyn_current{kk}*obj.K_current{kk})*Phi_x_kj{kk};
+                % calculate beta here
+            
             end
+
+            
+
         end
 
-        function S_cons = blockConstraint(obj,x,u)
-            import casadi.*
-            m=obj.m;
-            S_cons = [m.A(x,u), m.B(x,u), -eye(m.nx) ;...
-                m.C(x,u), m.D(x,u), zeros(m.ni,m.nx)];
-        end
+        % function S_cons = blockConstraint(obj,x,u)
+        %     import casadi.*
+        %     m=obj.m;
+        %     S_cons = [m.A(x,u), m.B(x,u), -eye(m.nx) ;...
+        %         m.C(x,u), m.D(x,u), zeros(m.ni,m.nx)];
+        % end
 
         function obj = solve_beta_stationnarity(obj)
             for kk=1:obj.N

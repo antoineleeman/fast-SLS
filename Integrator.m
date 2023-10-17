@@ -22,7 +22,7 @@ classdef Integrator < DynamicalSystem
     properties
                 
     end
-    
+
     methods
         function obj = Integrator()
             obj.nx=2;
@@ -31,7 +31,7 @@ classdef Integrator < DynamicalSystem
             obj.ni_x =4;
             obj.nw = 2;
             obj.dt =1;
-
+            obj.E = 0.01*eye(obj.nx);
         end
         function dt = ode(obj,x,u) % equation of motion of the dynamical system in continuous time (x_dot = ode(x,u) )
             A = [1,1;...

@@ -117,7 +117,7 @@ classdef (Abstract) DynamicalSystem
         end
 
         function G = G(obj,x,u) % derivative wrt w
-            %TODO
+            %TODO, it would need to be PD!
         end
         % add constraints
 
