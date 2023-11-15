@@ -43,14 +43,11 @@ classdef KKT_SLS < OCP
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
             
-            import casadi.*
-            x = casadi.SX.sym('x',m.nx);
-            u = casadi.SX.sym('u',m.nu);
-
-            [~,f] = m.cons(x,u);
-            [~,f_f] = m.cons_f(x);
+            % import casadi.*
+            % x = casadi.SX.sym('x',m.nx);
+            % u = casadi.SX.sym('u',m.nu);
             
-            obj.nominal_ubg = [kron(ones(obj.N,1), [zeros(m.nx,1); f])]; % assume time invariant constraints + move to initialization
+            obj.nominal_ubg = [kron(ones(obj.N,1), [zeros(m.nx,1); m.d])]; % assume time invariant constraints + move to initialization
             obj.ubg_current = obj.nominal_ubg;
 
         end
@@ -66,7 +63,6 @@ classdef KKT_SLS < OCP
             obj.A_dyn_current = cell(1,N);
             obj.B_dyn_current = cell(1,N);
             obj.C_cons_current = cell(1,N);
-            obj.D_cons_current = cell(1,N);
 
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
             current_nominal_mat = reshape([obj.current_nominal;zeros(nu,1)], [nx+nu, N+1]);
@@ -78,13 +74,12 @@ classdef KKT_SLS < OCP
 
                 % we should not call this function multiple times, but
                 % rather save it for later use.
-                obj.A_dyn_current{kk} = m.A(xkk,ukk);
-                obj.B_dyn_current{kk} = m.B(xkk,ukk);
-                obj.C_cons_current{kk} = m.C(xkk,ukk);
-                obj.D_cons_current{kk} = m.D(xkk,ukk);
+                obj.A_dyn_current{kk} = m.A;
+                obj.B_dyn_current{kk} = m.B;
+                obj.C_cons_current{kk} = m.C;
                 
                 S_fun =[obj.A_dyn_current{kk}, obj.B_dyn_current{kk}, -eye(m.nx) ;...
-                obj.C_cons_current{kk}, obj.D_cons_current{kk}, zeros(m.ni,m.nx)];
+                obj.C_cons_current{kk}, zeros(m.ni,m.nx)];
                 columnPadding = casadi.DM.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
                 rowPadding = casadi.DM.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
                 
@@ -112,7 +107,7 @@ classdef KKT_SLS < OCP
             obj.lbx_fun= casadi.Function('lbx_fun',{x0},{lbx});
 
             % initialization of beta
-            obj.beta_kj = obj.epsilon.*ones(ni,N);
+            obj.beta_kj = obj.epsilon.*ones(ni,N); % need all the other columns ..
             obj.eta_kj = obj.epsilon.*casadi.DM.zeros(ni,N);
 
         end
@@ -143,7 +138,7 @@ classdef KKT_SLS < OCP
         end
 
         function [obj, K] = backward_solve(obj) % could be computed using HPIPM! + we are evaluating twice the dynamics
-            import casadi.*
+
             m=obj.m;
             N = obj.N;
             nx = m.nx;
@@ -153,41 +148,35 @@ classdef KKT_SLS < OCP
             S = cell(N+1,1);
             K = cell(N,1);
 
-            C_f = m.Cf(x);
-            C_f_fun = casadi.Function('C_f_fun',{x},{C_f});
+            C_f = m.Cf;
             
 
-            C = m.C(x,u);
-            C_fun = casadi.Function('C_fun',{var},{C});
-            
-            D = m.D(x,u);
-            D_fun = casadi.Function('D_fun',{var},{D});
+            C = m.C;
 
             y_current = reshape([obj.current_nominal;zeros(nu,1)], [nx+nu, N+1]);
-            [x_bar, u_bar] = convert_y_to_xu(obj.current_nominal);
+            [x_bar, u_bar] = obj.convert_y_to_xu(m,obj.current_nominal);
             
             xf = x_bar(1:nx,end);
 
-            S{N+1} = C_f_fun(xf)' * diag(obj.eta_kj(1:m.ni_x,N)) *C_f_fun(xf)+ obj.Q_reg;
+            S{N+1} = C_f' * diag(obj.eta_kj(1:m.ni_x,N)) *C_f+ obj.Q_reg;
 
             for kk=N:-1:1
                 xkk = x_bar(kk);
                 ukk = u_bar(kk);
 
-                C = obj.C_cons_current{kk};
-                D = obj.D_cons_current{kk};
-
-                Ck = [C'; D']*diag(obj.eta_kj(:,kk))*[C, D];
+                %C = obj.C_cons_current{kk};
+                Ck = C'*diag(obj.eta_kj(:,kk))*C;
 
                 Cxk = Ck(1:nx, 1:nx) + obj.Q_reg;
                 Cuk = Ck(nx+1:end, nx+1:end) + obj.R_reg;
+                
                 % Cxuk missing!
                 A = obj.A_dyn_current{kk};
                 B = obj.A_dyn_current{kk};
                 K{kk} = -(Cuk+B'*S{kk+1}*B)\(B'*S{kk+1}*A);
                 S{kk} = Cxk + A'*S{kk+1}*A + A'*S{kk+1}*B*K{kk};
             end
-            obj.current_K = K;            
+            obj.K_current = K;            
         end
         % 
         function [obj, beta] = compute_backoff(obj)
@@ -199,16 +188,19 @@ classdef KKT_SLS < OCP
             Phi_x_kj = cell(N+1,1);
             Phi_u_kj = cell(N+1,1);
 
-            Phi_x_kj{1} = eye(nx);
+            Phi_x_kj{1} = m.E;% should be the disturbance matrix
+
+            beta_kj = zeros(m.ni,obj.N);
+            C = m.C;
             for kk=1:N
-                Phi_u_kj{kk} = obj.K_current{kk}*Phi_x_kj{kk};
+                DIM=1; %double check
+                Phi_u_kj{kk} = obj.K_current{kk}*Phi_x_kj{kk}; %% should have only one input, Riccati recursion is probably wrong
+
+                beta_kj(:,kk) = vecnorm(C'*[Phi_x_kj{kk};Phi_u_kj{kk}],2,DIM);
+                bo_k(:,kk) = beta_kj(:,kk); % needs an extra loop over j
                 Phi_x_kj{kk+1} = (obj.A_dyn_current{kk} + obj.B_dyn_current{kk}*obj.K_current{kk})*Phi_x_kj{kk};
-                % calculate beta here
-            
+                % calculate beta here + bo here
             end
-
-            
-
         end
 
         % function S_cons = blockConstraint(obj,x,u)
@@ -220,14 +212,14 @@ classdef KKT_SLS < OCP
 
         function obj = solve_beta_stationnarity(obj)
             for kk=1:obj.N
-                obj.eta_kj(:,kk) = obj.mu_current(kk)./sqrt(obj.beta_kj(:,kk));
+                obj.eta_kj(:,kk) = obj.mu_current(:,kk)./sqrt(obj.beta_kj(:,kk));
             end
         end
 
-        function [x,u] = convert_y_to_xu(obj,y)
-            y_mat = reshape([y;zeros(obj.nu,1)], [obj.nx+obj.nu, obj.N+1]);
-            x = y_mat(1:obj.nx,:);
-            u = y_mat(obj.nx+1:end, 1:obj.N);
+        function [x,u] = convert_y_to_xu(obj,m,y)
+            y_mat = reshape([y;zeros(m.nu,1)], [m.nx+m.nu, obj.N+1]);
+            x = y_mat(1:m.nx,:);
+            u = y_mat(m.nx+1:end, 1:obj.N);
         end
 
         % function y = convert_xu_to_y(x,u)

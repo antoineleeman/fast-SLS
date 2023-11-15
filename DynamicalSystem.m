@@ -16,7 +16,7 @@ classdef (Abstract) DynamicalSystem
         dt; % time step
         parameters;
         integrator;
-        linear;
+        linear; %boolean
     end
 
     methods (Abstract)
@@ -95,7 +95,7 @@ classdef (Abstract) DynamicalSystem
             C = C_fun([x;u]);
         end
 
-        function Cf = Cf(obj,x)
+        function Cf = Cf(obj,x) %final constraint
             import casadi.*
 
             x_fun = casadi.SX.sym('x',obj.nx);

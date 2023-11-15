@@ -17,10 +17,22 @@
 %}
 % Link: https://arxiv.org/abs/2212.02111
 % -----------------------------------------------------------------------------
-classdef Integrator < DynamicalSystem
+classdef Integrator
 
     properties
-                
+        A; %dyn, ct or dt??
+        B; %input
+        C; % constraint x
+        d;
+        Cf; % terminal constraint
+        df;
+        E; % noise matrix
+        nx; % number of state variables
+        nu; % number of input variables
+        nw; % size of the disturbance
+        ni; % size of the constraints
+        ni_x; %number of terminal constraint
+        dt; % time step
     end
 
     methods
@@ -32,43 +44,26 @@ classdef Integrator < DynamicalSystem
             obj.nw = 2;
             obj.dt =1;
             obj.E = 0.01*eye(obj.nx);
-        end
-        function dt = ode(obj,x,u) % equation of motion of the dynamical system in continuous time (x_dot = ode(x,u) )
-            A = [1,1;...
+            obj.A = [1,1;...
                 0,1];
-            B = [0.5;1];
-            dt = A*x+B*u;
-        end
-
-        function x_p = ddyn(obj,x,u) %discretization of the dynamical system
-            x_p = obj.ode(x,u); %ode already in discrete time
-        end
-
-        function [g,f] = cons(obj,x,u)
-        % add an if statement for linear constraints
-            x_max = 5;
-            u_max = 3;
-            C = [1,0;...
+            obj.B = [0.5;1];
+            obj.C = [[1,0;...
                 -1,0;...
                 0,1;...
                 0,-1;
-                zeros(2)];
-            D = [zeros(4,1);
+                zeros(2)],[zeros(4,1);
                 1;
-                -1];
-            f =[x_max;x_max;x_max;x_max;u_max ;u_max];
-            g = C*x+D*u-f;
-        end
-        function [g,f] = cons_f(obj,x,u)
+                -1]];
             x_max = 5;
-            C = [1,0;...
+            u_max = 3;
+
+            obj.d = [x_max;x_max;x_max;x_max;u_max ;u_max];
+            obj.Cf = [1,0;...
                 -1,0;...
                 0,1;...
-                0,-1];
-            f =[x_max;x_max;x_max;x_max];
-            g = C*x-f;
+                0,-1;];
+            obj.df = [x_max;x_max;x_max;x_max];
         end
-
 
     end
 end
