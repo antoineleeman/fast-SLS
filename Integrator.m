@@ -43,7 +43,7 @@ classdef Integrator
             obj.ni_x =4;
             obj.nw = 2;
             obj.dt =1;
-            obj.E = 0.01*eye(obj.nx);
+            obj.E = 0.3*eye(obj.nx);
             obj.A = [1,1;...
                 0,1];
             obj.B = [0.5;1];

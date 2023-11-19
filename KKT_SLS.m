@@ -40,6 +40,7 @@ classdef KKT_SLS < OCP
             obj.epsilon = 1e-3;
            %obj = obj.initialize_solver_forward('qpoases');% try osqp! + HPIPM
             obj = obj.initialize_solver_forward('osqp');
+            %obj = obj.initialize_solver_forward('ipopt');
 
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
@@ -90,7 +91,6 @@ classdef KKT_SLS < OCP
             end
             obj.A_current = A_mat;
 
-
             S_cost = blkdiag(obj.Q, obj.R);
             obj.H_mat = blkdiag(kron(eye(obj.N), S_cost),obj.Qf);
             obj.H_mat = DM(sparse(obj.H_mat));
@@ -101,8 +101,8 @@ classdef KKT_SLS < OCP
             obj.lbg = [kron(ones(obj.N,1), [zeros(m.nx,1);  -casadi.DM.inf(ni,1)])];
 
             x0 = casadi.SX.sym('x0',nx);
-            ubx = [x0; casadi.DM.inf(N*(nx+nu),1)];
-            lbx = [x0; -casadi.DM.inf(N*(nx+nu),1)];
+            ubx = [x0+obj.epsilon; casadi.DM.inf(N*(nx+nu),1)];
+            lbx = [x0-obj.epsilon; -casadi.DM.inf(N*(nx+nu),1)];
 
             obj.ubx_fun= casadi.Function('ubx_fun',{x0},{ubx});
             obj.lbx_fun= casadi.Function('lbx_fun',{x0},{lbx});
@@ -121,7 +121,12 @@ classdef KKT_SLS < OCP
             nu = m.nu;
             ni = m.ni;
 
+            c = obj.ubg_current;
             sol = obj.solver_forward('a',obj.A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.ubg_current,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
+            
+            %obj.lbx_fun(x0) and should also include the terminal condition
+            
+            
             %obj.A_current = obj.A_mat_fun(sol.x);
             
             % add update A_current;
@@ -186,14 +191,14 @@ classdef KKT_SLS < OCP
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
-            Phi_x_kj = cell(N+1,1);
-            Phi_u_kj = cell(N+1,1);
+            Phi_x_kj = cell(N,1);
+            Phi_u_kj = cell(N,1);
 
             Phi_x_kj{1} = m.E;% should be the disturbance matrix
 
-            beta_kj = zeros(m.ni,N);
+            beta_kj = zeros(m.ni,N-1); % no tightening for the first time step
             C = m.C;
-            for kk=1:N
+            for kk=1:N-1
                 DIM=1; %double check
                 Phi_u_kj{kk} = obj.K_current{kk}*Phi_x_kj{kk}; %% should have only one input, Riccati recursion is probably wrong
 
@@ -208,8 +213,10 @@ classdef KKT_SLS < OCP
             %beta_kj(1:4,N+1) = [vecnorm(Cf*full(Phi_x_kj{N+1}),2,2)]; % HARDCODED VALUE!!! We should have a separate variable beta for the last state. It could have more constraints.
             obj.beta_kj = beta_kj;
 
+            beta_0j = zeros(ni,1);% no tughtening for the first time step
+            %update_ubg = reshape([beta_0j,[zeros(nx,N-1); m.d - beta_kj]],[(N)*(ni+nx),1]);
+            update_ubg = reshape([zeros(nx,N); m.d - [beta_0j, beta_kj]],[(N)*(ni+nx),1]);
 
-            update_ubg = reshape([zeros(nx,N); [m.d - beta_kj]],[(N)*(ni+nx),1]);
 %            new_ubg = obj.nominal_ubg - update_ubg;
             obj.ubg_current = update_ubg;
         end
