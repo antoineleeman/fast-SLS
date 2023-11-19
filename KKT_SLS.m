@@ -229,9 +229,14 @@ classdef KKT_SLS < OCP
         % end
 
         function obj = update_cost_tube(obj)
-            for kk=1:obj.N
+            for kk=1:obj.N-1
                 obj.eta_kj(:,kk) = obj.mu_current(:,kk)./sqrt(obj.beta_kj(:,kk));
             end
+        end
+
+        function obj = check_stationnarity(obj)
+
+            
         end
 
         function [x,u] = convert_y_to_xu(obj,m,y)
