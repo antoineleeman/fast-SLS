@@ -54,7 +54,7 @@ classdef KKT_SLS < OCP
 
         end
         
-        function [obj, x_bar, u_bar, K] = solve(obj)
+        function [feasible, x_bar, u_bar, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
             %parrallelized, or not?
             %inexact or not?
             % catch HPIPM errors
@@ -63,26 +63,37 @@ classdef KKT_SLS < OCP
             CONV_EPS = 1e-4;
             m = obj.m;
             N = obj.N;
-            x0 = obj.x0;
+            obj.x0;%%
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
 
 
-            figure(1);
-            clf;
-            hold on;
-            rectangle('Position',[-5 -5 10 10]); %constraints
-            axis equal;
-
-            figure(2);
-            clf;
+            % figure(1);
+            % clf;
+            % hold on;
+            % rectangle('Position',[-5 -5 10 10]); %constraints
+            % axis equal;
+            % 
+            % figure(2);
+            % clf;
+            feasible = false;
             for ii=1:MAX_ITER
-                [obj, x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
+
+                try 
+                    [obj, x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
+                catch e
+                    if contains(e.message, 'error_on_fail')
+                        disp('infeasible forward solve -- use soft constraints');
+                        return;
+                    else
+                        rethrow(e);
+                    end
+                end
 
                 if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= CONV_EPS
-                    ii
-                    disp('converged!')
-                    break;
+                    disp('converged!');
+                    feasible =true;
+                    return;
                 else
                     current_x = x_bar;
                     current_u = u_bar;
@@ -91,20 +102,23 @@ classdef KKT_SLS < OCP
                 % lambda_bar: dynamics
                 % mu_bar: constraints % not sure about their value, are the constraints on
                 % x really not active?
-                x_bar_plot = full(x_bar);
-                u_bar_plot = full(u_bar);
 
-                figure(1);
-                plot(x_bar_plot(1,:),x_bar_plot(2,:),'.-','linewidth',2);
-                hold on;
 
-                figure(2);
-                hold on;
-                plot(u_bar_plot,'linewidth',2);
+                % x_bar_plot = full(x_bar);
+                % u_bar_plot = full(u_bar);
+                % 
+                % figure(1);
+                % plot(x_bar_plot(1,:),x_bar_plot(2,:),'.-','linewidth',2);
+                % hold on;
+                % 
+                % figure(2);
+                % hold on;
+                % plot(u_bar_plot,'linewidth',2);
                 obj = obj.update_cost_tube();
                 [obj, K] = obj.backward_solve();
                 [obj,beta] = obj.update_backoff();
             end
+            disp('no feasible solution found');
 
         end
 
@@ -177,8 +191,10 @@ classdef KKT_SLS < OCP
             ni = m.ni;
 
             c = obj.ubg_current;
+
             sol = obj.solver_forward('a',obj.A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.ubg_current,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
-            
+
+
             %obj.lbx_fun(x0) and should also include the terminal condition
             
             
