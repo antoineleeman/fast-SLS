@@ -54,6 +54,51 @@ classdef KKT_SLS < OCP
 
         end
         
+        function [obj, x_bar, u_bar, K] = solve(obj)
+            %parrallelized, or not?
+            %inexact or not?
+            % catch HPIPM errors
+            
+            MAX_ITER = 10;
+            CONV_EPS = 1e-4;
+            m = obj.m;
+            N = obj.N;
+            current_x = zeros(m.nx,N+1);
+            current_u = zeros(m.nu,N);
+
+            for ii=1:MAX_ITER
+                [kkt, x_bar, u_bar, lambda_bar, mu_bar] = kkt.forward_solve(x0);
+
+                if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= CONV_EPS
+                    ii
+                    disp('converged!')
+                    break;
+                else
+                    current_x = x_bar;
+                    current_u = u_bar;
+                end
+
+                % lambda_bar: dynamics
+                % mu_bar: constraints % not sure about their value, are the constraints on
+                % x really not active?
+                % x_bar_plot = full(x_bar);
+                % u_bar_plot = full(u_bar);
+
+                % figure(1);
+                % plot(x_bar_plot(1,:),x_bar_plot(2,:),'.-','linewidth',2);
+                % hold on;
+                % 
+                % figure(2);
+                % hold on;
+                % plot(u_bar_plot,'linewidth',2);
+                kkt = kkt.update_cost_tube();
+                [kkt, K] = kkt.backward_solve();
+                [kkt,beta] = kkt.udpate_backoff();
+            end
+
+        end
+
+
         function obj = initialize_solver_forward(obj,solver)
             import casadi.*
             m=obj.m;
@@ -236,7 +281,7 @@ classdef KKT_SLS < OCP
 
         function obj = check_stationnarity(obj)
 
-            
+
         end
 
         function [x,u] = convert_y_to_xu(obj,m,y)
