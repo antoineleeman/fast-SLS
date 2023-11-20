@@ -50,6 +50,7 @@ xlabel('N');
 ylabel('computation times');
 
 %%
-solver_mosek = YALMIP_SLS(10,Q,R,m, x0,Qf);
-solver_mosek.solve([-2;5]);
+solver_mosek = YALMIP_SLS(10,Q,R,m,x0,Qf);
+solver_mosek.solve(x0);
+
 

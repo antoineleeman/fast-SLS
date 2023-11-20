@@ -18,6 +18,7 @@ classdef YALMIP_SLS < OCP
         end
         
         function [feasible] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+            obj.initialize_solve('quadprog');
             obj.yalmip_solver(x0);
 
         end
@@ -27,8 +28,8 @@ classdef YALMIP_SLS < OCP
                         
             m = obj.m;
             N = obj.N;
-            nx = obj.nx;
-            nu = obj.nu;
+            nx = m.nx;
+            nu = m.nu;
             A = m.A;
             B = m.B;
 
@@ -91,9 +92,9 @@ classdef YALMIP_SLS < OCP
                     f = C(jj,:); b = d(jj);
                     LHS = f*[Z(:,ii);V(:,ii)];
                     for kk = 1:ii-1
-                        Phi_ki = [ Phi_x((ii-1)*nx+1:ii*nx,kk*nx+1:(kk+1)*nx);...
-                            Phi_u((ii-1)*nu+1:ii*nu,kk*nx+1:(kk+1)*nx))];
-                        LHS = LHS + norm(f* Phi_kj, 2);
+                        Phi_ki = [ Phi_x(N*nx+1:(N+1)*nx,kk*nx+1:(kk+1)*nx);
+                            Phi_u((ii-1)*nu+1:ii*nu,kk*nx+1:(kk+1)*nx)];
+                        LHS = LHS + norm(f* Phi_ki, 2);
                     end
                     constraints = [constraints, LHS <= b];
                 end
@@ -127,8 +128,9 @@ classdef YALMIP_SLS < OCP
             %     end
             % end
             
-            options = sdpsettings('verbose',0,'solver',solver);
-            obj.yalmip_solver = optimizer(constraints,objective,options,X0);
+            %options = sdpsettings('verbose',0,'solver',solver);
+            options = sdpsettings('verbose',0);
+            obj.yalmip_solver = optimizer(constraints,objective,options,X0,V(:,1));% change output
 
         end
 
