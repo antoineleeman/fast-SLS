@@ -12,7 +12,7 @@ Q = eye(m.nx);
 R = 100*eye(m.nu);
 Qf = Q;
 
-
+%%
 
 grid_density = 5;
 x1_range = linspace(-5,5,grid_density);
@@ -48,3 +48,8 @@ set(gca, 'XScale', 'log')
 legend('iSLS', '$\mathcal{O}(N^2)$','interpreter','latex');
 xlabel('N');
 ylabel('computation times');
+
+%%
+solver_mosek = YALMIP_SLS(10,Q,R,m, x0,Qf);
+solver_mosek.solve([-2;5]);
+
