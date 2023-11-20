@@ -63,11 +63,21 @@ classdef KKT_SLS < OCP
             CONV_EPS = 1e-4;
             m = obj.m;
             N = obj.N;
+            x0 = obj.x0;
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
 
+
+            figure(1);
+            clf;
+            hold on;
+            rectangle('Position',[-5 -5 10 10]); %constraints
+            axis equal;
+
+            figure(2);
+            clf;
             for ii=1:MAX_ITER
-                [kkt, x_bar, u_bar, lambda_bar, mu_bar] = kkt.forward_solve(x0);
+                [obj, x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
 
                 if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= CONV_EPS
                     ii
@@ -81,19 +91,19 @@ classdef KKT_SLS < OCP
                 % lambda_bar: dynamics
                 % mu_bar: constraints % not sure about their value, are the constraints on
                 % x really not active?
-                % x_bar_plot = full(x_bar);
-                % u_bar_plot = full(u_bar);
+                x_bar_plot = full(x_bar);
+                u_bar_plot = full(u_bar);
 
-                % figure(1);
-                % plot(x_bar_plot(1,:),x_bar_plot(2,:),'.-','linewidth',2);
-                % hold on;
-                % 
-                % figure(2);
-                % hold on;
-                % plot(u_bar_plot,'linewidth',2);
-                kkt = kkt.update_cost_tube();
-                [kkt, K] = kkt.backward_solve();
-                [kkt,beta] = kkt.udpate_backoff();
+                figure(1);
+                plot(x_bar_plot(1,:),x_bar_plot(2,:),'.-','linewidth',2);
+                hold on;
+
+                figure(2);
+                hold on;
+                plot(u_bar_plot,'linewidth',2);
+                obj = obj.update_cost_tube();
+                [obj, K] = obj.backward_solve();
+                [obj,beta] = obj.update_backoff();
             end
 
         end
@@ -185,7 +195,7 @@ classdef KKT_SLS < OCP
             mu_bar = dual(nx+1:end,:);
             lambda_bar = [sol.lam_x(1:nx), dual(1:nx,:)];
 
-            obj.mu_current = mu_bar;
+            obj.mu_current = full(mu_bar);
         end
 
         function [obj, K] = backward_solve(obj) % could be computed using HPIPM! + we are evaluating twice the dynamics
@@ -230,22 +240,21 @@ classdef KKT_SLS < OCP
             obj.K_current = K;            
         end
         % 
-        function [obj, beta_kj] = udpate_backoff(obj)
+        function [obj, beta_kj] = udpate_backoff_inexact(obj)
             m=obj.m;
             N = obj.N;
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
             Phi_x_kj = cell(N,1);
-            Phi_u_kj = cell(N,1);
+            Phi_u_kj = cell(N,1); % !! should not be the same size!
 
-            Phi_x_kj{1} = m.E;% should be the disturbance matrix
+            Phi_x_kj{1} = m.E;
 
             beta_kj = zeros(m.ni,N-1); % no tightening for the first time step
             C = m.C;
             for kk=1:N-1
-                DIM=1; %double check
-                Phi_u_kj{kk} = obj.K_current{kk}*Phi_x_kj{kk}; %% should have only one input, Riccati recursion is probably wrong
+                Phi_u_kj{kk} = obj.K_current{kk}*Phi_x_kj{kk};
 
                 beta_kj(:,kk) = vecnorm(C*full([Phi_x_kj{kk};Phi_u_kj{kk}]),2,2);
                 bo_k(:,kk) = beta_kj(:,kk); % needs an extra loop over j
@@ -264,6 +273,37 @@ classdef KKT_SLS < OCP
 
 %            new_ubg = obj.nominal_ubg - update_ubg;
             obj.ubg_current = update_ubg;
+        end
+
+        function [obj, beta_kj] = update_backoff(obj) %% use the same controller
+            m=obj.m;
+            N = obj.N;
+            nx = m.nx;
+            nu = m.nu;
+            ni = m.ni;
+
+            C = m.C;
+            Phi_x_kj = cell(N,N);
+            Phi_u_kj = cell(N,N); % !! should not be the same size!
+
+            beta_kj = zeros(m.ni,N-1); % no tightening for the first time step
+            for jj=1:N-1 % iteration on the disturbance number
+                Phi_x_kj{jj,jj} = m.E; % could be time-varying (nonlinear case)
+                for kk=jj:N-1
+                    Phi_u_kj{kk,jj} = obj.K_current{kk}*Phi_x_kj{kk,jj}; %% kk or jj?
+
+                    beta_kj(:,kk) =beta_kj(:,kk) + vecnorm(C*full([Phi_x_kj{kk,jj};Phi_u_kj{kk,jj}]),2,2);
+                    A_cl = obj.A_dyn_current{kk} + obj.B_dyn_current{kk}*obj.K_current{kk};
+                    Phi_x_kj{kk+1,jj} = A_cl*Phi_x_kj{kk,jj};
+                end
+                bo_k(:,jj) = beta_kj(:,jj);
+            end
+            obj.beta_kj = beta_kj;
+
+            beta_0j = zeros(ni,1);% no tughtening for the first time step
+            update_ubg = reshape([zeros(nx,N); m.d - [beta_0j, beta_kj]],[(N)*(ni+nx),1]);
+            obj.ubg_current = update_ubg;
+
         end
 
         % function S_cons = blockConstraint(obj,x,u)
