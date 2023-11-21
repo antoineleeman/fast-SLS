@@ -9,15 +9,15 @@ Q = eye(m.nx);
 R = 100*eye(m.nu);
 Qf = Q;
 
-%%
+%
 
 grid_density = 5;
 x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 
 timings_N = [];
-%%
-for nn=5:5:50
+%
+for nn=5:15:100
     nn
     kkt = KKT_SLS(nn,Q,R,m,Qf); %x0 seems unused %% check if the bo are well reset
     timing = [];
@@ -74,8 +74,10 @@ ylabel('computation times');
 
 set(gca,'FontSize',10);
 set(gcf,'units','centimeters','Position', [0 0 15 15]);
+grid on;
 
-exportgraphics(gcf,strcat('fig1.pdf'),'ContentType','vector');
+
+exportgraphics(gcf,strcat('img/fig1.pdf'),'ContentType','vector');
 
 %%
 clear all;
@@ -86,9 +88,32 @@ N = 15;
 
 
 n_sample = 3;
-timings_M_yal = [];
-timings_M_kkt = [];
 
+timings_M_kkt = [];
+for mm = 5:20:150
+    mm
+    msd = ChainOfMassSpringDampers(mm);
+    Q = eye(msd.nx);
+    R = eye(msd.nu);
+    Qf = Q;
+    kkt = KKT_SLS(N,Q,R,msd,Qf);
+    timing_mm_kkt = [];
+    for ii=1:n_sample
+        x0 =rand(msd.nx,1);
+        tic
+        feasible = kkt.solve(x0);
+        time =toc;
+        if feasible
+            timings_mm_kkt = [timing_mm_kkt;time];
+        end
+    end
+
+    timings_M_kkt = [timings_M_kkt,[mm; mean(timings_mm_kkt);std(timings_mm_kkt)]];
+end
+
+%%
+timings_M_yal = [];
+N = 15;
 for mm = 3:3:15
     mm
     msd = ChainOfMassSpringDampers(mm);
@@ -96,39 +121,42 @@ for mm = 3:3:15
     R = eye(msd.nu);
     Qf = Q;
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf); 
-    kkt = KKT_SLS(N,Q,R,msd,Qf); %x0 seems unused %% check if the bo are well reset
-
     timings_mm_yalmip = [];
-    timing_mm_kkt = [];
     for ii=1:n_sample
+    x0 =rand(msd.nx,1);
+
         tic
-        feasible = solver_yalmip.solve(rand(msd.nx,1));
+        feasible = solver_yalmip.solve(x0);
         time =toc;
         if feasible
             timings_mm_yalmip = [timings_mm_yalmip;time];
         end
-    
-        tic
-        feasible = kkt.solve(rand(msd.nx,1));
-        time =toc;
-        if feasible
-            timings_mm_kkt = [timing_mm_kkt;time];
-        end
     end
-
    timings_M_yal = [timings_M_yal,[mm; mean(timings_mm_yalmip);std(timings_mm_yalmip)]];
-   timings_M_kkt = [timings_M_kkt,[mm; mean(timings_mm_kkt);std(timings_mm_kkt)]];
 end
 
-
+save('yalm_scalability_nx');
+%%
+figure(2);
+clf;
+load('yalm_scalability_nx.mat');
+load('kkt_scalability_nx.mat');
 errorbar(timings_M_kkt(1,:), timings_M_kkt(2,:), timings_M_kkt(3,:),'LineWidth',2);
 hold on;
 errorbar(timings_M_yal(1,:), timings_M_yal(2,:), timings_M_yal(3,:),'LineWidth',2);
-plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/1000 ,'LineWidth',2);
-plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^6/10000 ,'LineWidth',2);
+plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/100000 ,'LineWidth',2);
+
+plot(timings_M_yal(1,:), timings_M_yal(1,:).^3/100 ,'LineWidth',2);
+
+%lot(timings_M_kkt(1,:), timings_M_kkt(1,:).^6/10000 ,'LineWidth',2);
 
 set(gca, 'YScale', 'log')
 set(gca, 'XScale', 'log')
-legend('iSLS','gurobi','$\mathcal{O}(n_x^3)$','$\mathcal{O}(n_x^6)$','interpreter','latex');
+legend('iSLS','gurobi','$\mathcal{O}(n_x^3)$','$\mathcal{O}(n_x^3)$','interpreter','latex');
 xlabel('n_x');
 ylabel('computation times');
+grid on;
+
+set(gca,'FontSize',10);
+set(gcf,'units','centimeters','Position', [0 0 15 15]);
+exportgraphics(gcf,strcat('img/fig2.pdf'),'ContentType','vector');
