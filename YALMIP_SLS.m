@@ -9,12 +9,12 @@ classdef YALMIP_SLS < OCP
     end
     
     methods
-        function obj = YALMIP_SLS(N,Q,R,m,x0,Qf)
-            obj@OCP(N,Q,R,m,x0,Qf);
+        function obj = YALMIP_SLS(N,Q,R,m,Qf)
+            obj@OCP(N,Q,R,m,Qf);
 
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
-            solver = 'sedumi';
+            solver = 'gurobi';
             obj = obj.initialize_solve(solver);
 
         end

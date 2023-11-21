@@ -33,7 +33,7 @@ classdef KKT_SLS < OCP
     end
     
     methods
-        function obj = KKT_SLS(N,Q,R,m,x0,Qf)
+        function obj = KKT_SLS(N,Q,R,m,Qf)
             obj@OCP(N,Q,R,m,x0,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.current_adj_corr = 0;

@@ -6,17 +6,15 @@ classdef OCP
         R;   % Input cost matrix
         Qf;  % Final state cost matrix
         m; % model
-        x0;
         xf;
     end
     
     methods
-        function obj = OCP(N,Q,R,m,x0,Qf)
+        function obj = OCP(N,Q,R,m,Qf)
             obj.N = N;
             obj.Q = Q;
             obj.R = R;
             obj.m = m;
-            obj.x0 = x0;
             obj.xf = zeros(m.nx,1);
             obj.Qf = Qf;
             % add assert with size of Q and R
