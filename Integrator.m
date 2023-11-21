@@ -17,7 +17,7 @@
 %}
 % Link: https://arxiv.org/abs/2212.02111
 % -----------------------------------------------------------------------------
-classdef Integrator
+classdef Integrator 
 
     properties
         A; %dyn, ct or dt??
@@ -37,6 +37,7 @@ classdef Integrator
 
     methods
         function obj = Integrator()
+            %add the dt
             obj.nx=2;
             obj.nu=1;
             obj.ni = 6;

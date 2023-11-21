@@ -34,7 +34,7 @@ classdef KKT_SLS < OCP
     
     methods
         function obj = KKT_SLS(N,Q,R,m,Qf)
-            obj@OCP(N,Q,R,m,x0,Qf);
+            obj@OCP(N,Q,R,m,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.current_adj_corr = 0;
             obj.epsilon = 1e-3;
@@ -63,7 +63,6 @@ classdef KKT_SLS < OCP
             CONV_EPS = 1e-4;
             m = obj.m;
             N = obj.N;
-            obj.x0;%%
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
 

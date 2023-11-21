@@ -19,7 +19,7 @@ timings_N = [];
 %%
 for nn=5:5:50
     nn
-    kkt = KKT_SLS(nn,Q,R,m,x0,Qf); %x0 seems unused %% check if the bo are well reset
+    kkt = KKT_SLS(nn,Q,R,m,Qf); %x0 seems unused %% check if the bo are well reset
     timing = [];
     for ii = 1:length(x1_range)
         for jj = 1:length(x2_range)
@@ -72,10 +72,49 @@ legend('iSLS','gurobi','$\mathcal{O}(N^2)$','$\mathcal{O}(N^4)$','interpreter','
 xlabel('N');
 ylabel('computation times');
 
+set(gca,'FontSize',10);
+set(gcf,'units','centimeters','Position', [0 0 15 15]);
+
+exportgraphics(gcf,strcat('fig1.pdf'),'ContentType','vector');
+
 %%
-x0 = [-0;0];
-nn = 20;
+clear all;
+close all;
+clc;
 
-solver_sedumi = YALMIP_SLS(nn,Q,R,m,x0,Qf);
-solver_sedumi.solve(x0)
+N = 15;
 
+
+n_sample = 3;
+
+for mm = 3:3:15
+    msd = ChainOfMassSpringDampers(3);
+    Q = eye(msd.nx);
+    R = eye(msd.nu);
+    Qf = Q;
+    solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf); 
+    kkt = KKT_SLS(N,Q,R,msd,Qf); %x0 seems unused %% check if the bo are well reset
+
+    timing_mm_yalmip = [];
+    timing_mm_kkt = [];
+    for ii=1:n_sample
+        tic
+        feasible = solver_yalmip.solve(rand(msd.nx,1));
+        time =toc;
+        if feasible
+            timing_mm_yalmip = [timing_mm_yalmip;time];
+        end
+    
+        tic
+        feasible = kkt.solve(rand(msd.nx,1));
+        time =toc;
+        if feasible
+            timings_M_kkt = [timing_mm_kkt;time];
+        end
+    end
+
+   timings_M_yal = [timings_M_yal,[mm; mean(timing_mm_yalmip);std(timing_mm_yalmip)]];
+   timings_M_kkt = [timings_M_kkt,[mm; mean(timings_M_kkt);std(timings_M_kkt)]];
+
+
+end

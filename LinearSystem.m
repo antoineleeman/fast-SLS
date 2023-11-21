@@ -8,23 +8,24 @@
 
 classdef (Abstract) LinearSystem < DynamicalSystem
     properties
-        Ass; %dyn, ct
-        Bss; %input
-        Css; % constraint x
-        dss;
-        Cfss; % terminal constraint
-        dfss;
-        Ess; % noise matrix
+        A; %dyn, ct
+        B; %input
+        C; % constraint x
+        d;
+        Cf; % terminal constraint
+        df;
+        E; % noise matrix
     end
 
     methods
         % Constructor
-        function obj = LinearSystem(A,B,C,D,E,dt)
+        function obj = LinearSystem(A,B,C,E,dt)
             if nargin > 0
-                obj.Ass = A;
-                obj.Bss = B;
-                obj.Css = C;
-                obj.Ess = E;
+                obj.A = A;
+                obj.B = B;
+                obj.C = C;
+                obj.E = E;
+                obj.dt =dt;
                 [obj.nx, obj.nu] = size(B);
                 [~,obj.nw] = size(E);
                 [obj.ni,~] = size(C);
@@ -34,14 +35,7 @@ classdef (Abstract) LinearSystem < DynamicalSystem
     end
 
     methods
-        function dt = ode(obj,x,u) % equation of motion of the dynamical system in continuous time (x_dot = ode(x,u) )
-            dt = obj.A*x+obj.B*u;
-        end
-
-        function A = A(obj,x,u)
-            A = obj.A;
-        end
-
+        
     end
 
 end

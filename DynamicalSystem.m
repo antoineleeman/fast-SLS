@@ -19,11 +19,11 @@ classdef (Abstract) DynamicalSystem
         linear; %boolean
     end
 
-    methods (Abstract)
-        ode(obj,x,u,w); %continuous time
-        cons(obj,x,u); %constraint
-        cons_f(obj,x);
-    end
+    % methods (Abstract)
+    %     ode(obj,x,u,w); %continuous time
+    %     cons(obj,x,u); %constraint
+    %     cons_f(obj,x);
+    % end
 
     methods
         % Constructor
