@@ -55,7 +55,7 @@ classdef Integrator
                 1;
                 -1]];
             x_max = 5;
-            u_max = 2;
+            u_max = 3;
 
             obj.d = [x_max;x_max;x_max;x_max;u_max ;u_max];
             obj.Cf = [1,0;...
