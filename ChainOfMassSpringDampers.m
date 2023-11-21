@@ -41,7 +41,7 @@ classdef ChainOfMassSpringDampers < LinearSystem
             x_max = 1;
 
             obj.d = u_max;
-            obj.Cf = [zeros(1,obj.nx+obj.nu)];
+            obj.Cf = [zeros(1,obj.nx)]; % no terminal constraint
             obj.df = x_max;
         end
                 % taken from: https://gitlab.ethz.ch/ics/NMPC-StabilityAnalysis/-/blob/main/LinearExample_ChainOfMassSpringDampers/main.m?ref_type=heads

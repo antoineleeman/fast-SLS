@@ -86,35 +86,49 @@ N = 15;
 
 
 n_sample = 3;
+timings_M_yal = [];
+timings_M_kkt = [];
 
 for mm = 3:3:15
-    msd = ChainOfMassSpringDampers(3);
+    mm
+    msd = ChainOfMassSpringDampers(mm);
     Q = eye(msd.nx);
     R = eye(msd.nu);
     Qf = Q;
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf); 
     kkt = KKT_SLS(N,Q,R,msd,Qf); %x0 seems unused %% check if the bo are well reset
 
-    timing_mm_yalmip = [];
+    timings_mm_yalmip = [];
     timing_mm_kkt = [];
     for ii=1:n_sample
         tic
         feasible = solver_yalmip.solve(rand(msd.nx,1));
         time =toc;
         if feasible
-            timing_mm_yalmip = [timing_mm_yalmip;time];
+            timings_mm_yalmip = [timings_mm_yalmip;time];
         end
     
         tic
         feasible = kkt.solve(rand(msd.nx,1));
         time =toc;
         if feasible
-            timings_M_kkt = [timing_mm_kkt;time];
+            timings_mm_kkt = [timing_mm_kkt;time];
         end
     end
 
-   timings_M_yal = [timings_M_yal,[mm; mean(timing_mm_yalmip);std(timing_mm_yalmip)]];
-   timings_M_kkt = [timings_M_kkt,[mm; mean(timings_M_kkt);std(timings_M_kkt)]];
-
-
+   timings_M_yal = [timings_M_yal,[mm; mean(timings_mm_yalmip);std(timings_mm_yalmip)]];
+   timings_M_kkt = [timings_M_kkt,[mm; mean(timings_mm_kkt);std(timings_mm_kkt)]];
 end
+
+
+errorbar(timings_M_kkt(1,:), timings_M_kkt(2,:), timings_M_kkt(3,:),'LineWidth',2);
+hold on;
+errorbar(timings_M_yal(1,:), timings_M_yal(2,:), timings_M_yal(3,:),'LineWidth',2);
+plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/1000 ,'LineWidth',2);
+plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^6/10000 ,'LineWidth',2);
+
+set(gca, 'YScale', 'log')
+set(gca, 'XScale', 'log')
+legend('iSLS','gurobi','$\mathcal{O}(n_x^3)$','$\mathcal{O}(n_x^6)$','interpreter','latex');
+xlabel('n_x');
+ylabel('computation times');
