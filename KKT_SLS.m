@@ -54,10 +54,11 @@ classdef KKT_SLS < OCP
 
         end
         
-        function [feasible, x_bar, u_bar, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+        function [feasible,ii, x_bar, u_bar, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
             %parrallelized, or not?
             %inexact or not?
             % catch HPIPM errors
+            % check size of x0
             
             MAX_ITER = 10;
             CONV_EPS = 1e-4;
@@ -75,6 +76,9 @@ classdef KKT_SLS < OCP
             % 
             % figure(2);
             % clf;
+            it_x = cell(MAX_ITER,1);
+            it_u = cell(MAX_ITER,1);
+
             feasible = false;
             for ii=1:MAX_ITER
 
@@ -88,10 +92,15 @@ classdef KKT_SLS < OCP
                         rethrow(e);
                     end
                 end
-
+                
+                it_x{ii} = x_bar;
+                it_u{ii} = u_bar;
                 if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= CONV_EPS
                     disp('converged!');
                     feasible =true;
+                    if ii>8
+                        disp('long convergence');
+                    end
                     return;
                 else
                     current_x = x_bar;
@@ -101,8 +110,8 @@ classdef KKT_SLS < OCP
                 [obj, K] = obj.backward_solve();
 
 
-                %[obj,beta] = obj.update_backoff();
-                [obj,~] = obj.update_backoff_parr();
+                [obj,beta] = obj.update_backoff();
+                %[obj,~] = obj.update_backoff_parr();
             end
             disp('no feasible solution found');
 
@@ -307,58 +316,58 @@ classdef KKT_SLS < OCP
             obj.ubg_current = update_ubg;
 
         end
-
-
-        function [obj, beta_kj] = update_backoff_parr(obj) %% use the same controller
-            m=obj.m;
-            N = obj.N;
-            nx = m.nx;
-            nu = m.nu;
-            ni = m.ni;
-
-            C = m.C;
-            
-            % Preallocate memory for Phi_x_kj and Phi_u_kj
-            Phi_x_kj = cell(N-1, N-1);
-            Phi_u_kj = cell(N-1, N-1);
-            
-            % Temporary variables for parallel computation, each 'jj' will write to a unique third dimension
-            temp_beta_kj = zeros(m.ni, N-1, N-1);
-            
-            parfor jj = 1:N-1
-                local_beta_kj = zeros(m.ni, N-1); % Local variable for beta_kj computation
-                temp_Phi_x_kj = m.E; % Local variable for Phi_x_kj{jj,jj}
-                
-                for kk = jj:N-1
-                %for kk = 1:5
-                    temp_Phi_u_kj = obj.K_current{kk} * temp_Phi_x_kj; % Local computation
-            
-                    local_beta_kj(:, kk) = vecnorm(C * full([temp_Phi_x_kj; temp_Phi_u_kj]), 2, 2);
-                    
-                    A_cl = obj.A_dyn_current{kk} + obj.B_dyn_current{kk} * obj.K_current{kk};
-                    temp_Phi_x_kj = A_cl * temp_Phi_x_kj; % Update for next iteration
-            
-                    % Store results in cell arrays
-                    Phi_x_kj{kk, jj} = temp_Phi_x_kj;
-                    Phi_u_kj{kk, jj} = temp_Phi_u_kj;
-                end
-            
-                temp_beta_kj(:, :, jj) = local_beta_kj; % Writing to a unique slice
-            end
-            
-            % Aggregate results from temp_beta_kj
-            beta_kj = sum(temp_beta_kj, 3);
-            
-            % Compute bo_k
-            bo_k = beta_kj(:, 1:N-1);
-
-            obj.beta_kj = beta_kj;
-
-            beta_0j = zeros(ni,1);% no tughtening for the first time step
-            update_ubg = reshape([zeros(nx,N); m.d - [beta_0j, beta_kj]],[(N)*(ni+nx),1]);
-            obj.ubg_current = update_ubg;
-
-        end
+        % 
+        % 
+        % function [obj, beta_kj] = update_backoff_parr(obj) %% use the same controller
+        %     m=obj.m;
+        %     N = obj.N;
+        %     nx = m.nx;
+        %     nu = m.nu;
+        %     ni = m.ni;
+        % 
+        %     C = m.C;
+        % 
+        %     % Preallocate memory for Phi_x_kj and Phi_u_kj
+        %     Phi_x_kj = cell(N-1, N-1);
+        %     Phi_u_kj = cell(N-1, N-1);
+        % 
+        %     % Temporary variables for parallel computation, each 'jj' will write to a unique third dimension
+        %     temp_beta_kj = zeros(m.ni, N-1, N-1);
+        % 
+        %     parfor jj = 1:N-1
+        %         local_beta_kj = zeros(m.ni, N-1); % Local variable for beta_kj computation
+        %         temp_Phi_x_kj = m.E; % Local variable for Phi_x_kj{jj,jj}
+        % 
+        %         for kk = jj:N-1
+        %         %for kk = 1:5
+        %             temp_Phi_u_kj = obj.K_current{kk} * temp_Phi_x_kj; % Local computation
+        % 
+        %             local_beta_kj(:, kk) = vecnorm(C * full([temp_Phi_x_kj; temp_Phi_u_kj]), 2, 2);
+        % 
+        %             A_cl = obj.A_dyn_current{kk} + obj.B_dyn_current{kk} * obj.K_current{kk};
+        %             temp_Phi_x_kj = A_cl * temp_Phi_x_kj; % Update for next iteration
+        % 
+        %             % Store results in cell arrays
+        %             Phi_x_kj{kk, jj} = temp_Phi_x_kj;
+        %             Phi_u_kj{kk, jj} = temp_Phi_u_kj;
+        %         end
+        % 
+        %         temp_beta_kj(:, :, jj) = local_beta_kj; % Writing to a unique slice
+        %     end
+        % 
+        %     % Aggregate results from temp_beta_kj
+        %     beta_kj = sum(temp_beta_kj, 3);
+        % 
+        %     % Compute bo_k
+        %     bo_k = beta_kj(:, 1:N-1);
+        % 
+        %     obj.beta_kj = beta_kj;
+        % 
+        %     beta_0j = zeros(ni,1);% no tughtening for the first time step
+        %     update_ubg = reshape([zeros(nx,N); m.d - [beta_0j, beta_kj]],[(N)*(ni+nx),1]);
+        %     obj.ubg_current = update_ubg;
+        % 
+        % end
 
         % function S_cons = blockConstraint(obj,x,u)
         %     import casadi.*
