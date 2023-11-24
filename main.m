@@ -11,6 +11,30 @@ grid_density = 15;
 x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
+N = 3;
+%
+profile on
+kkt = KKT_SLS(N,Q,R,m,Qf); %% check if the bo are well reset
+IT = [];
+for ii = 1:length(x1_range)
+    for jj = 1:length(x2_range)
+        x0 = [x1_range(ii); x2_range(jj)];
+        [feasible,it] = kkt.solve(x0);
+        if feasible
+            IT = [IT;it];
+        end
+    end
+end
+%%
+m = Integrator();
+Q = eye(m.nx);
+R = 100*eye(m.nu);
+Qf = Q;
+
+grid_density = 15;
+x1_range = linspace(-5,5,grid_density);
+x2_range = linspace(-5,5,grid_density);
+timings_N = [];
 %
 profile on
 kkt = KKT_SLS(15,Q,R,m,Qf); %% check if the bo are well reset
@@ -25,7 +49,7 @@ for ii = 1:length(x1_range)
     end
 end
 
-hist(IT)
+
 %%
 L = 3;
 msd = ChainOfMassSpringDampers(L);
@@ -39,7 +63,7 @@ grid_density = 5;
 timings_N_exact_kkt = [];
 %for nn=5:15:100
 n_sample = 15;
-for nn=5:10:150
+for nn=5:10:80
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf); %x0 seems unused %% check if the bo are well reset
     timing_kkt = [];
@@ -58,7 +82,7 @@ for nn=5:10:150
     timings_N_exact_kkt = [timings_N_exact_kkt,[nn; mean(timing_kkt);std(timing_kkt)]];
     
 end
-save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','L')
+save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','msd')
 
 %%
 
@@ -78,15 +102,11 @@ for nn=5:10:80
     end
     timings_N_yal = [timings_N_yal,[nn; mean(timing_yal);std(timing_yal)]];
 end
-save(getUniqueName('timings_N_yal'),'timings_N_yal','L')
+save(getUniqueName('timings_N_yal'),'timings_N_yal','msd')
 
 %%
 clear all;
 close all;
-
-%load('22-Nov-2023_16_51_16__timings_N_kkt.mat');
-load('22-Nov-2023_17_02_10__timings_N_yal.mat');%% L = 3
-load('24-Nov-2023_13_22_34__timings_N_exact_kkt.mat')
 
 
 clf;

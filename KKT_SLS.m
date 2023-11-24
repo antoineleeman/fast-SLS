@@ -27,25 +27,21 @@ classdef KKT_SLS < OCP
         eta_kj;
         mu_current;
         K_current;
-
-        A_dyn_current;
-        B_dyn_current;
-        C_cons_current;
     end
     
     methods
         function obj = KKT_SLS(N,Q,R,m,Qf)
             obj@OCP(N,Q,R,m,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
-            obj.current_adj_corr = 0; % remove
             obj.epsilon = 1e-3;
             obj = obj.initialize_solver_forward('osqp');
-            %obj = obj.initialize_solver_forward('ipopt');
 
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
                         
-            obj.nominal_ubg = [kron(ones(obj.N,1), [zeros(m.nx,1); m.d])]; % assume time invariant constraints + move to initialization
+            obj.nominal_ubg = [kron(ones(obj.N-1,1), [zeros(m.nx,1); m.d])]; % assume time invariant constraints + move to initialization
+            %terminal constraint
+            obj.nominal_ubg = [obj.nominal_ubg; zeros(m.nx,1); m.df];
             obj.ubg_current = obj.nominal_ubg;
 
         end
@@ -63,7 +59,6 @@ classdef KKT_SLS < OCP
 
             feasible = false;
             for ii=1:MAX_ITER
-
                 try 
                     [obj, x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
                 catch e
@@ -86,7 +81,6 @@ classdef KKT_SLS < OCP
                 end
                 obj = obj.update_cost_tube(); 
                 [obj, K] = obj.backward_solve();
-
                 [obj,beta] = obj.update_backoff();
             end
             disp('no feasible solution found');
@@ -100,32 +94,41 @@ classdef KKT_SLS < OCP
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
-            %ni_x = m.ni_x;
+            ni_x = m.ni_x;
             N = obj.N;
-            obj.A_dyn_current = cell(1,N);
-            obj.B_dyn_current = cell(1,N);
-            obj.C_cons_current = cell(1,N);
+            A = m.A;
+            B = m.B;
+            C = m.C;
+            Cf = m.Cf;
 
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
             A_mat = zeros(0,nx);
+            I = eye(nx);
+            Zero = zeros(ni,m.nx);
+            Zerof = zeros(ni_x,m.nx);
 
-            for kk=1:obj.N % no constraint on last time step x_N: could add a equality or box constraint
-                
-                % we should not call this function multiple times, but
-                % rather save it for later use.
-                obj.A_dyn_current{kk} = m.A;
-                obj.B_dyn_current{kk} = m.B;
-                obj.C_cons_current{kk} = m.C;
-                
-                S_fun =[obj.A_dyn_current{kk}, obj.B_dyn_current{kk}, -eye(m.nx) ;...
-                obj.C_cons_current{kk}, zeros(m.ni,m.nx)];
+            for kk=1:obj.N-1 % no constraint on last time step x_N: could add a equality or box constraint                                
+                S_fun =[A, B, -I ;...
+                C, Zero];
                 columnPadding = casadi.DM.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
                 rowPadding = casadi.DM.zeros(m.nx+m.ni, (kk-1)*(m.nx+m.nu));
                 
                 A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
                     horzcat(rowPadding, S_fun)));
-                % affine part in the dynamics?
+                % affine part in the dynamics?: can use a lifting
             end
+            S_fun =[A, B, -I ;...
+                [Cf*A, Cf*B, Zerof]]; % update RHS of constraint
+            columnPadding = casadi.DM.zeros((N-1)*(nx+ni), nu + nx);
+            rowPadding = casadi.DM.zeros(nx+ni_x, (N-1)*(nx+nu));
+
+            A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
+                horzcat(rowPadding, S_fun)));
+            % affine part in the dynamics?: can use a lifting
+
+
+
+            %add constraint on last time step
             obj.A_current = A_mat;
 
             S_cost = blkdiag(obj.Q, obj.R);
@@ -135,7 +138,8 @@ classdef KKT_SLS < OCP
             obj.H_mat_sparsity = obj.H_mat.sparsity();
             options = struct;
             obj.solver_forward = conic('solver', solver, struct('a',A_mat.sparsity(), 'h',obj.H_mat_sparsity),options);
-            obj.lbg = [kron(ones(obj.N,1), [zeros(m.nx,1);  -casadi.DM.inf(ni,1)])];
+            obj.lbg = [kron(ones(obj.N-1,1), [zeros(m.nx,1);  -casadi.DM.inf(ni,1)])];
+            obj.lbg = [obj.lbg; [zeros(m.nx,1);  -casadi.DM.inf(ni_x,1)] ];
 
             x0 = casadi.SX.sym('x0',nx);
             ubx = [x0+obj.epsilon; casadi.DM.inf(N*(nx+nu),1)];
@@ -145,7 +149,7 @@ classdef KKT_SLS < OCP
             obj.lbx_fun= casadi.Function('lbx_fun',{x0},{lbx});
 
             % initialization of beta
-            obj.beta_kj = obj.epsilon.*ones(N,N,ni); % need all the other columns ..
+            obj.beta_kj = obj.epsilon.*ones(N,N,ni);
         end
 
         function [obj, x_bar, u_bar, lambda_bar, mu_bar] = forward_solve(obj,x0)
@@ -187,14 +191,14 @@ classdef KKT_SLS < OCP
             C_f = m.Cf;
             C = m.C;
 
+            A = m.A;
+            B = m.B;
             for jj=1:N-1
                 eta_Nj = obj.eta_kj{N-1,jj}(1:1:m.ni_x);% mistake?
                 S{N,jj} = C_f' * diag(eta_Nj) *C_f+ obj.Q_reg;%should be Q_f
-                A = obj.A_dyn_current{jj};
-                B = obj.B_dyn_current{jj};
 
                 for kk=N-1:-1:jj 
-                    Ck = C'*diag(obj.eta_kj{kk,jj})*C;    
+                    Ck = C'*diag(obj.eta_kj{kk,jj})*C;
                     Cxk = Ck(1:nx, 1:nx) + obj.Q_reg;
                     Cuk = Ck(nx+1:end, nx+1:end) + obj.R_reg;
                     
@@ -217,14 +221,14 @@ classdef KKT_SLS < OCP
             Phi_u_kj = cell(N,N); % !! should not be the same size!
 
             beta_kj = zeros(N-1,N-1,ni); % no tightening for the first time step
-
-            bo_j = cell(N-1);
+            A = m.A;
+            B = m.B;
             for jj=1:N-1 % iteration on the disturbance number
                 Phi_x_kj{jj,jj} = m.E; % could be time-varying (nonlinear case)
                 for kk=jj:N-1
                     Phi_u_kj{kk,jj} = obj.K_current{kk,jj}*Phi_x_kj{kk,jj};
                     beta_kj(kk,jj,:) = vecnorm(C*full([Phi_x_kj{kk,jj};Phi_u_kj{kk,jj}]),2,2);
-                    A_cl = obj.A_dyn_current{kk} + obj.B_dyn_current{kk}*obj.K_current{kk,jj};
+                    A_cl = A + B*obj.K_current{kk,jj};
                     Phi_x_kj{kk+1,jj} = A_cl*Phi_x_kj{kk,jj};
                 end
             end
@@ -250,7 +254,6 @@ classdef KKT_SLS < OCP
             end
             obj.eta_kj = eta_kj;
         end
-
 
         function [x,u] = convert_y_to_xu(obj,m,y)
             y_mat = reshape([y;zeros(m.nu,1)], [m.nx+m.nu, obj.N+1]);

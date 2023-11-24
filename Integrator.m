@@ -41,7 +41,7 @@ classdef Integrator
             obj.nx=2;
             obj.nu=1;
             obj.ni = 6;
-            obj.ni_x =4;
+            obj.ni_x =6;
             obj.nw = 2;
             obj.dt =1;
             obj.E = 0.3*eye(obj.nx);
@@ -62,8 +62,10 @@ classdef Integrator
             obj.Cf = [1,0;...
                 -1,0;...
                 0,1;...
-                0,-1;];
-            obj.df = [x_max;x_max;x_max;x_max];
+                0,-1;...
+                0,0;...
+                0,0];
+            obj.df = [x_max;x_max;x_max;x_max;x_max;x_max];
         end
 
     end
