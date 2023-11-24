@@ -13,7 +13,7 @@ x2_range = linspace(-5,5,grid_density);
 timings_N = [];
 %
 profile on
-kkt = KKT_SLS(15,Q,R,m,Qf); %x0 seems unused %% check if the bo are well reset
+kkt = KKT_SLS(15,Q,R,m,Qf); %% check if the bo are well reset
 IT = [];
 for ii = 1:length(x1_range)
     for jj = 1:length(x2_range)
