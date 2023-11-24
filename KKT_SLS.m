@@ -107,13 +107,10 @@ classdef KKT_SLS < OCP
             obj.C_cons_current = cell(1,N);
 
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
-            current_nominal_mat = reshape([obj.current_nominal;zeros(nu,1)], [nx+nu, N+1]);
             A_mat = zeros(0,nx);
 
             for kk=1:obj.N % no constraint on last time step x_N: could add a equality or box constraint
-                xkk = current_nominal_mat(1:nx,kk);
-                ukk = current_nominal_mat(nx+1:end,kk);
-
+                
                 % we should not call this function multiple times, but
                 % rather save it for later use.
                 obj.A_dyn_current{kk} = m.A;
@@ -191,7 +188,7 @@ classdef KKT_SLS < OCP
             C = m.C;
 
             for jj=1:N-1
-                eta_Nj = obj.eta_kj{N-1,jj}(1:1:m.ni_x);
+                eta_Nj = obj.eta_kj{N-1,jj}(1:1:m.ni_x);% mistake?
                 S{N,jj} = C_f' * diag(eta_Nj) *C_f+ obj.Q_reg;%should be Q_f
                 A = obj.A_dyn_current{jj};
                 B = obj.B_dyn_current{jj};
@@ -236,7 +233,7 @@ classdef KKT_SLS < OCP
             obj.beta_kj = beta_kj; %% need to add epsilon?
             obj.bo_j = bo_j;
 
-            bo_0j = zeros(ni,1);% no tughtening for the first time step
+            bo_0j = zeros(ni,1);% no tightening for the first time step
             update_ubg = reshape([zeros(nx,N); m.d - [bo_0j, bo_j]],[(N)*(ni+nx),1]);
             obj.ubg_current = update_ubg;
 

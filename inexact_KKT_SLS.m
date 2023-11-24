@@ -1,3 +1,6 @@
+%% contains a bug!!
+
+
 classdef inexact_KKT_SLS < KKT_SLS
     properties
         %no new properties
@@ -13,25 +16,17 @@ classdef inexact_KKT_SLS < KKT_SLS
             nu = m.nu;
             ni = m.ni;
             
-            S = cell(N+1,1);
+            S = cell(N,1);
             K = cell(N,1);
 
             C_f = m.Cf;
             C = m.C;
 
-            y_current = reshape([obj.current_nominal;zeros(nu,1)], [nx+nu, N+1]);
-            [x_bar, u_bar] = obj.convert_y_to_xu(m,obj.current_nominal);
-            
-            xf = x_bar(1:nx,end);
+            S{N} = C_f' * diag(obj.eta_kj{N-1}(1:m.ni_x)) *C_f+ obj.Q_reg;
 
-            S{N+1} = C_f' * diag(obj.eta_kj(1:m.ni_x,N)) *C_f+ obj.Q_reg;
-
-            for kk=N:-1:1
-                xkk = x_bar(kk);
-                ukk = u_bar(kk);
-
+            for kk=N-1:-1:1
                 %C = obj.C_cons_current{kk};
-                Ck = C'*diag(obj.eta_kj(:,kk))*C;
+                Ck = C'*diag(obj.eta_kj{kk})*C;
 
                 Cxk = Ck(1:nx, 1:nx) + obj.Q_reg;
                 Cuk = Ck(nx+1:end, nx+1:end) + obj.R_reg;
@@ -45,6 +40,7 @@ classdef inexact_KKT_SLS < KKT_SLS
         end
 
         function [obj, beta_kj] = update_backoff(obj) %% using the same controller from the first Riccati
+        %check again, the beta could be wrong!!
             m=obj.m;
             N = obj.N;
             nx = m.nx;
@@ -59,13 +55,12 @@ classdef inexact_KKT_SLS < KKT_SLS
             for jj=1:N-1 % iteration on the disturbance number
                 Phi_x_kj{jj,jj} = m.E; % could be time-varying (nonlinear case)
                 for kk=jj:N-1
-                    Phi_u_kj{kk,jj} = obj.K_current{kk}*Phi_x_kj{kk,jj}; %% kk or jj?
+                    Phi_u_kj{kk,jj} = obj.K_current{kk}*Phi_x_kj{kk,jj};
 
                     beta_kj(:,kk) =beta_kj(:,kk) + vecnorm(C*full([Phi_x_kj{kk,jj};Phi_u_kj{kk,jj}]),2,2);
                     A_cl = obj.A_dyn_current{kk} + obj.B_dyn_current{kk}*obj.K_current{kk};
                     Phi_x_kj{kk+1,jj} = A_cl*Phi_x_kj{kk,jj};
                 end
-                bo_k(:,jj) = beta_kj(:,jj);
             end
             obj.beta_kj = beta_kj;
 
@@ -76,9 +71,14 @@ classdef inexact_KKT_SLS < KKT_SLS
         end
 
         function obj = update_cost_tube(obj) %% we only need to calculate the eta of the first column
+            N = obj.N;
+            eta_kj = cell(N-1,1);
+
             for kk=1:obj.N-1
-                obj.eta_kj(:,kk) = obj.mu_current(:,kk)./sqrt(obj.beta_kj(:,kk));
+                eta_kj{kk} = obj.mu_current(:,kk)./sqrt(obj.beta_kj(:,kk));
             end
+            obj.eta_kj = eta_kj;
+
         end
 
         % 
@@ -140,8 +140,6 @@ classdef inexact_KKT_SLS < KKT_SLS
         %     S_cons = [m.A(x,u), m.B(x,u), -eye(m.nx) ;...
         %         m.C(x,u), m.D(x,u), zeros(m.ni,m.nx)];
         % end
-
-
 
     end
 end

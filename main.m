@@ -36,10 +36,10 @@ grid_density = 5;
 % x1_range = linspace(-5,5,grid_density);
 % x2_range = linspace(-5,5,grid_density);
 
-timings_N_kkt = [];
+timings_N_exact_kkt = [];
 %for nn=5:15:100
-n_sample = 3;
-for nn=5:10:80    
+n_sample = 15;
+for nn=5:10:150
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf); %x0 seems unused %% check if the bo are well reset
     timing_kkt = [];
@@ -55,11 +55,12 @@ for nn=5:10:80
     end
     %     end
     % end
-    timings_N_kkt = [timings_N_kkt,[nn; mean(timing_kkt);std(timing_kkt)]];
+    timings_N_exact_kkt = [timings_N_exact_kkt,[nn; mean(timing_kkt);std(timing_kkt)]];
     
 end
-save(getUniqueName('timings_N_kkt'),'timings_N_kkt','L')
-%
+save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','L')
+
+%%
 
 timings_N_yal = [];
 for nn=5:10:80
@@ -83,8 +84,11 @@ save(getUniqueName('timings_N_yal'),'timings_N_yal','L')
 clear all;
 close all;
 
-load('22-Nov-2023_16_51_16__timings_N_kkt.mat');
+%load('22-Nov-2023_16_51_16__timings_N_kkt.mat');
 load('22-Nov-2023_17_02_10__timings_N_yal.mat');%% L = 3
+load('24-Nov-2023_13_22_34__timings_N_exact_kkt.mat')
+
+
 clf;
 
 colors = [0.0504    0.0298    0.5280
@@ -94,12 +98,12 @@ colors = [0.0504    0.0298    0.5280
     0.9400    0.9752    0.1313];
 
 
-errorbar(timings_N_kkt(1,:), timings_N_kkt(2,:), timings_N_kkt(3,:),'LineWidth',2,'Color', colors(1,:));
+errorbar(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:), timings_N_exact_kkt(3,:),'LineWidth',2,'Color', colors(1,:));
 hold on;
 errorbar(timings_N_yal(1,:), timings_N_yal(2,:), timings_N_yal(3,:),'LineWidth',2,'Color', colors(3,:));
 %plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^2/100 ,'LineWidth',2, 'Color', [.5 .5 .5]);
-plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^(2.5)/1000 ,'LineWidth',2, 'Color', [.5 .5 .5]);
-h = plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^2/2000 ,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
+plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^(2.5)/1000 ,'LineWidth',2, 'Color', [.5 .5 .5]);
+h = plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^2/150000 ,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
 %set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
 set(gca, 'YScale', 'log')
@@ -109,17 +113,17 @@ l.Position = [    0.2327    0.7521    0.1582    0.1322];
 xlabel('Horizon length N','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');
 grid on;
-N_min = [min([timings_N_yal(1,:),timings_N_kkt(1,:)])];
-N_max = [max([timings_N_yal(1,:),timings_N_kkt(1,:)])];
-cpu_min = [min([timings_N_yal(2,:),timings_N_kkt(2,:)])];
-cpu_max = [max([timings_N_yal(2,:),timings_N_kkt(2,:)])];
+N_min = [min([timings_N_yal(1,:),timings_N_exact_kkt(1,:)])];
+N_max = [max([timings_N_yal(1,:),timings_N_exact_kkt(1,:)])];
+cpu_min = [min([timings_N_yal(2,:),timings_N_exact_kkt(2,:)])];
+cpu_max = [max([timings_N_yal(2,:),timings_N_exact_kkt(2,:)])];
 axis([N_min, N_max+50, cpu_min/2, cpu_max*2])
 
 
 set(gca,'FontSize',10);
 set(gcf,'units','centimeters','Position', [0 0 15 10]);
 grid on;
-exportgraphics(gcf,strcat('img/fig1.pdf'),'ContentType','vector');
+%exportgraphics(gcf,strcat('img/fig1.pdf'),'ContentType','vector');
 
 %%
 clear all;
