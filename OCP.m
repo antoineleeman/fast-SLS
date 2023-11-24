@@ -27,4 +27,11 @@ classdef OCP
             cost = (x)'*obj.Qf*(x);
         end
     end
+    methods(Static) % implement with square roots!
+
+        function [K,S] = riccati_step(A,B,Cx,Cu,Sk)
+            K = -(Cu+B'*Sk*B)\(B'*Sk*A);
+            S = Cx + A'*Sk*A + A'*Sk*B*K;
+        end
+    end
 end
