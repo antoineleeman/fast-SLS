@@ -7,12 +7,12 @@ Q = eye(m.nx);
 R = 100*eye(m.nu);
 Qf = Q;
 
-grid_density = 30;
+grid_density = 15;
 x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
 %
-
+profile on
 kkt = KKT_SLS(15,Q,R,m,Qf); %x0 seems unused %% check if the bo are well reset
 IT = [];
 for ii = 1:length(x1_range)
@@ -24,6 +24,8 @@ for ii = 1:length(x1_range)
         end
     end
 end
+
+hist(IT)
 %%
 L = 3;
 msd = ChainOfMassSpringDampers(L);
@@ -95,13 +97,14 @@ colors = [0.0504    0.0298    0.5280
 errorbar(timings_N_kkt(1,:), timings_N_kkt(2,:), timings_N_kkt(3,:),'LineWidth',2,'Color', colors(1,:));
 hold on;
 errorbar(timings_N_yal(1,:), timings_N_yal(2,:), timings_N_yal(3,:),'LineWidth',2,'Color', colors(3,:));
-plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^2/100 ,'LineWidth',2, 'Color', [.5 .5 .5]);
-h = plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^2/1000 ,'LineWidth',2, 'Color', [.5 .5 .5]);
-set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
+%plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^2/100 ,'LineWidth',2, 'Color', [.5 .5 .5]);
+plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^(2.5)/1000 ,'LineWidth',2, 'Color', [.5 .5 .5]);
+h = plot(timings_N_kkt(1,:), timings_N_kkt(1,:).^2/2000 ,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
+%set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
 set(gca, 'YScale', 'log')
 set(gca, 'XScale', 'log')
-l = legend('iSLS','gurobi','$\mathcal{O}(N^2)$','interpreter','latex');
+l = legend('iSLS','gurobi','$\mathcal{O}(N^{2.5})$','$\mathcal{O}(N^2)$','interpreter','latex');
 l.Position = [    0.2327    0.7521    0.1582    0.1322];
 xlabel('Horizon length N','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');

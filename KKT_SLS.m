@@ -61,7 +61,7 @@ classdef KKT_SLS < OCP
             % check size of x0
             
             MAX_ITER = 10;
-            CONV_EPS = 1e-4;
+            CONV_EPS = 1e-6;
             m = obj.m;
             N = obj.N;
             current_x = zeros(m.nx,N+1);
@@ -98,9 +98,12 @@ classdef KKT_SLS < OCP
                 if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= CONV_EPS
                     disp('converged!');
                     feasible =true;
-                    if ii>8
-                        disp('long convergence');
-                    end
+                    % if ii>4
+                    %     disp('long convergence');
+                    %     for ii = 1:9
+                    %         tab(ii) = norm(full(it_x{ii} -it_x{ii+1}) ,'inf')
+                    %     end
+                    % end
                     return;
                 else
                     current_x = x_bar;
