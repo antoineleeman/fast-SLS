@@ -1,5 +1,9 @@
-classdef KKT_SLS < OCP
+%udpate !!
+
+
+classdef inexact_KKT_SLS < KKT_SLS
     %All the KKT related functions for the SLS problem
+    % re-implementation so that the Riccati recursions are solved inexactly
     
     properties
         current_bo;
@@ -33,7 +37,7 @@ classdef KKT_SLS < OCP
     end
     
     methods
-        function obj = KKT_SLS(N,Q,R,m,Qf)
+        function obj = inexact_KKT_SLS(N,Q,R,m,Qf)
             obj@OCP(N,Q,R,m,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.current_adj_corr = 0;
