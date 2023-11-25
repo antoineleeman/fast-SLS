@@ -48,16 +48,21 @@ classdef KKT_SLS < OCP
         
         function [feasible,ii, x_bar, u_bar, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
             % check size of x0            
-            MAX_ITER = 10;
+            MAX_ITER = 30;
             CONV_EPS = 1e-8;
+
             m = obj.m;
             N = obj.N;
+            ni = m.ni;
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
             it_x = cell(MAX_ITER,1);
             it_u = cell(MAX_ITER,1);
 
             feasible = false;
+            obj.ubg_current = obj.nominal_ubg;
+            obj.beta_kj = obj.epsilon.*ones(N-1,N-1,ni);
+
             for ii=1:MAX_ITER
                 try 
                     [obj, x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
@@ -117,7 +122,7 @@ classdef KKT_SLS < OCP
                     horzcat(rowPadding, S_fun)));
                 % affine part in the dynamics?: can use a lifting
             end
-            S_fun =[A, B, -I ;...
+            S_fun =[[A, B, -I ];...
                 [Cf*A, Cf*B, Zerof]]; % update RHS of constraint
             columnPadding = casadi.DM.zeros((N-1)*(nx+ni), nu + nx);
             rowPadding = casadi.DM.zeros(nx+ni_x, (N-1)*(nx+nu));

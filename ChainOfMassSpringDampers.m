@@ -30,21 +30,27 @@ classdef ChainOfMassSpringDampers < LinearSystem
             
             obj = initialization(obj,M);
 
-            obj.ni = 1;
-            obj.ni_x =1;
+            obj.ni = 2*obj.nx+1;
+            obj.ni_x =2*obj.nx+1;
             obj.nw = obj.nx;
 
             obj.E = 0.01*eye(obj.nw);
             
-            obj.C = [zeros(1,obj.nx) ,1];
+            obj.C = [eye(obj.nx),zeros(obj.nx,1);
+                -eye(obj.nx),zeros(obj.nx,1)
+                [zeros(1,obj.nx) ,1]];
             u_max = 3;
-            x_max = 1;
+            x_max = 10;
 
-            obj.d = u_max;
-            obj.Cf = [zeros(1,obj.nx)]; % no terminal constraint
-            obj.df = x_max;
+            %obj.d = u_max;
+            obj.d = [x_max*ones(obj.nx*2,1);u_max];
+            obj.Cf = [eye(obj.nx);
+                -eye(obj.nx);
+                [zeros(1,obj.nx) ]]; % no terminal constraint
+            obj.df = [x_max*ones(2*obj.nx,1);u_max];
         end
-                % taken from: https://gitlab.ethz.ch/ics/NMPC-StabilityAnalysis/-/blob/main/LinearExample_ChainOfMassSpringDampers/main.m?ref_type=heads
+        
+        % taken from: https://gitlab.ethz.ch/ics/NMPC-StabilityAnalysis/-/blob/main/LinearExample_ChainOfMassSpringDampers/main.m?ref_type=heads
         function obj = initialization(obj,M)
 
             % 1. Define model- Large scale mass-spring damper system

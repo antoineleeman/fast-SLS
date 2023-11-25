@@ -32,10 +32,11 @@ classdef (Abstract) LinearSystem < DynamicalSystem
                 [obj.ni_x,~] = size(Cf);
             end
         end
+
+        function x_p = ddyn(obj,x,u)
+            x_p = obj.A*x+obj.B*u;
+        end
     end
 
-    methods
-        
-    end
 
 end

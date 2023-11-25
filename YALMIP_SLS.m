@@ -9,12 +9,11 @@ classdef YALMIP_SLS < OCP
     end
     
     methods
-        function obj = YALMIP_SLS(N,Q,R,m,Qf)
+        function obj = YALMIP_SLS(N,Q,R,m,Qf,solver)
             obj@OCP(N,Q,R,m,Qf);
 
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
-            solver = 'gurobi';
             obj = obj.initialize_solve(solver);
 
         end
@@ -140,6 +139,7 @@ classdef YALMIP_SLS < OCP
             
             options = sdpsettings('verbose',1,'solver',solver);
             %options = sdpsettings('verbose',1);
+
             obj.yalmip_solve = optimizer(constraints,objective,options,[X0],V(1));% change output
 
         end
