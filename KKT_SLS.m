@@ -27,6 +27,8 @@ classdef KKT_SLS < OCP
         eta_kj;
         mu_current;
         K_current;
+        CONV_EPS;
+
     end
     
     methods
@@ -43,13 +45,13 @@ classdef KKT_SLS < OCP
             %terminal constraint
             obj.nominal_ubg = [obj.nominal_ubg; zeros(m.nx,1); m.df];
             obj.ubg_current = obj.nominal_ubg;
+            obj.CONV_EPS = 1e-8;
 
         end
         
         function [feasible,ii, x_bar, u_bar, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
             % check size of x0            
             MAX_ITER = 30;
-            CONV_EPS = 1e-8;
 
             m = obj.m;
             N = obj.N;
@@ -65,7 +67,7 @@ classdef KKT_SLS < OCP
 
             for ii=1:MAX_ITER
                 try 
-                    [obj, x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
+                    [obj, ~,x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
                 catch e
                     if contains(e.message, 'error_on_fail')
                         disp('infeasible forward solve -- use soft constraints');
@@ -76,7 +78,7 @@ classdef KKT_SLS < OCP
                 end
                 it_x{ii} = x_bar;
                 it_u{ii} = u_bar;
-                if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= CONV_EPS
+                if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= obj.CONV_EPS
                     disp('converged!');
                     feasible =true;
                     return;
@@ -157,15 +159,16 @@ classdef KKT_SLS < OCP
             obj.beta_kj = obj.epsilon.*ones(N,N,ni);
         end
 
-        function [obj, x_bar, u_bar, lambda_bar, mu_bar] = forward_solve(obj,x0)
+        function [obj, time, x_bar, u_bar, lambda_bar, mu_bar] = forward_solve(obj,x0)
             import casadi.*
             m=obj.m;
             N = obj.N;
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
-
+            tic;
             sol = obj.solver_forward('a',obj.A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.ubg_current,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
+            time = toc;
             %obj.lbx_fun(x0) and should also include the terminal condition                        
             %obj.A_current = obj.A_mat_fun(sol.x);
             % add update A_current;
