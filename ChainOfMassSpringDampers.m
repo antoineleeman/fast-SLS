@@ -30,24 +30,37 @@ classdef ChainOfMassSpringDampers < LinearSystem
             
             obj = initialization(obj,M);
 
-            obj.ni = 2*obj.nx+1;
-            obj.ni_x =2*obj.nx+1;
             obj.nw = obj.nx;
+           
+            obj.E = 0.001*eye(obj.nw);
 
-            obj.E = 0.05*eye(obj.nw);
-            
-            obj.C = [eye(obj.nx),zeros(obj.nx,1);
-                -eye(obj.nx),zeros(obj.nx,1)
-                [zeros(1,obj.nx) ,1]];
             u_max = 1;
-            x_max = 3;
+            % x_max = 1000;
+
+            % %obj.d = u_max;
+            % obj.C = [eye(obj.nx),zeros(obj.nx,1);
+            %     -eye(obj.nx),zeros(obj.nx,1)
+            %     [zeros(2,obj.nx) ,ones(2,1)]];
+            % obj.d = [x_max*ones(obj.nx*2,1);u_max*ones(2,1)];
+            % obj.Cf = [eye(obj.nx);
+            %     -eye(obj.nx);
+            %     [zeros(2,obj.nx) ]]; % no terminal constraint
+            % obj.df = [x_max*ones(2*obj.nx,1);u_max*ones(2,1)];
+            % obj.ni = 2*obj.nx+2;
+            % obj.ni_x =2*obj.nx+2;
+            % 
 
             %obj.d = u_max;
-            obj.d = [x_max*ones(obj.nx*2,1);u_max];
-            obj.Cf = [eye(obj.nx);
-                -eye(obj.nx);
-                [zeros(1,obj.nx) ]]; % no terminal constraint
-            obj.df = [x_max*ones(2*obj.nx,1);u_max];
+            obj.C = [zeros(2,obj.nx) ,ones(2,1)];
+            obj.d = [u_max*ones(2,1)];
+
+            obj.Cf = [zeros(2,obj.nx)];
+            obj.df = [u_max*ones(2,1)];
+            obj.ni = 2;
+            obj.ni_x =2;
+
+
+
         end
         
         % taken from: https://gitlab.ethz.ch/ics/NMPC-StabilityAnalysis/-/blob/main/LinearExample_ChainOfMassSpringDampers/main.m?ref_type=heads

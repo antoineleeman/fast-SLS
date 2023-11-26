@@ -11,15 +11,16 @@ grid_density = 15;
 x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
-N = 50;
+N = 15;
 %
-profile on
 kkt = KKT_SLS(N,Q,R,m,Qf); %% check if the bo are well reset
 IT = [];
+mosek = YALMIP_SLS(N,Q,R,m,Qf,'gurobi'); 
 for ii = 1:length(x1_range)
     for jj = 1:length(x2_range)
         x0 = [x1_range(ii); x2_range(jj)];
         [feasible,it] = kkt.solve(x0);
+        mosek.solve(x0);
         if feasible
             IT = [IT;it];
         end
