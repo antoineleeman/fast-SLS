@@ -4,19 +4,13 @@ clear all;
 close all;
 clc;
 
-%            obj.E = 0.05*eye(obj.nw);
-
-%            u_max = 1;
-%            x_max = 3;
-
-
-L = 30;
+L = 12;
 msd = ChainOfMassSpringDampers(L);
 Q = 100*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
-n_sample = 100;
-N=25;
+n_sample = 10000;
+N=30;
 
 
 
@@ -34,13 +28,22 @@ for ii =1:n_sample
     end
 end
 
-%save(getUniqueName('it_kkt'),'it_kkt','msd');
-%
-h = histogram(it_kkt);
+save(getUniqueName('it_kkt'),'it_kkt','msd');
+%%
+clear all
+close all
+clf
+load('26-Nov-2023_17_23_21__it_kkt.mat')
+colors = [0.0504    0.0298    0.5280
+    0.4934    0.0115    0.6580
+    0.7964    0.2780    0.4713
+    0.9722    0.5817    0.2541
+    0.9400    0.9752    0.1313];
+h = histogram(it_kkt, 'FaceColor', colors(1,:));
 xlabel('Number of iterations','interpreter','latex');
 ylabel('Number of simulations','interpreter','latex');
 grid on;
 
-% set(gca,'FontSize',10);
-% set(gcf,'units','centimeters','Position', [0 0 15 6]);
-% exportgraphics(gcf,strcat('img/fig3.pdf'),'ContentType','vector');
+set(gca,'FontSize',10);
+set(gcf,'units','centimeters','Position', [0 0 15 6]);
+exportgraphics(gcf,strcat('img/fig3.pdf'),'ContentType','vector');

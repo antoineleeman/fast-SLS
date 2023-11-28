@@ -73,7 +73,7 @@ save(getUniqueName('timings_N_gurobi'),'timings_N_gurobi','msd')
 save('gurobi-sls-N.mat','timings_N_gurobi','msd')
 
 %%
-
+expe01_init
 timings_N_mosek = [];
 for nn=3:3:30
     nn
@@ -128,7 +128,7 @@ load('gurobi-sls-N.mat')
 msd.nx
 load('fast-sls-N.mat')
 msd.nx
-%load('mosek-sls-N.mat')
+load('mosek-sls-N.mat')
 msd.nx
 %load('rti-fast-sls-N.mat')
 msd.nx
@@ -144,21 +144,27 @@ colors = [0.0504    0.0298    0.5280
     0.9722    0.5817    0.2541
     0.9400    0.9752    0.1313];
 figure(1);
-errorbar(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:), timings_N_exact_kkt(3,:),'LineWidth',2,'Color', colors(1,:));
+plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:),'LineWidth',2,'Color', colors(1,:));
 hold on;
 set(gca, 'YScale', 'log');
 set(gca, 'XScale', 'log');
-plot(timings_N_gurobi(1,:), timings_N_gurobi(2,:),'LineWidth',2,'Color', colors(2,:));
-%plot(timings_N_mosek(1,:), timings_N_mosek(2,:),'LineWidth',2,'Color', colors(3,:));
+plot(timings_N_gurobi(1,:), timings_N_gurobi(2,:),'LineWidth',2,'Color', colors(3,:));
+plot(timings_N_mosek(1,:), timings_N_mosek(2,:),'LineWidth',2,'Color', colors(4,:));
 %plot(timings_N_nominal(1,:), timings_N_nominal(2,:),'LineWidth',2,'Color', colors(4,:));
-%plot(timings_N_rti_kkt(1,:), timings_N_rti_kkt(2,:),'LineWidth',2,'Color', colors(5,:));
+%plot(timings_N_rti_kkt(1,:), timings_N_rti_kkt(2,:),'LineWidth',2,'Color', colors(3,:));
 
-plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^(2.5)/1000 ,'LineWidth',2, 'Linestyle',':', 'Color', [.5 .5 .5]);
-%h = plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^2/150000 ,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
+plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^(1)/5500 ,'LineWidth',2, 'Linestyle',':', 'Color', [.5 .5 .5]);
+
+h = plot(timings_N_mosek(1,:), timings_N_mosek(1,:).^3/500 ,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
+%set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
+h = plot(timings_N_gurobi(1,:), timings_N_gurobi(1,:).^2/10 ,'LineWidth',2, 'Linestyle','-.','Color', [.5 .5 .5]);
 %set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
-l = legend('fast-SLS','gurobi','nominal','$\mathcal{O}(N^{2.5})$','interpreter','latex');
-l.Position = [    0.2327    0.7521    0.1582    0.1322];
+
+
+l = legend('fast-SLS','gurobi','mosek','$\mathcal{O}(N)$','$\mathcal{O}(N^{3})$','$\mathcal{O}(N^{2})$','interpreter','latex');
+l.Position = [     0.6506    0.6926    0.1582    0.1322
+];
 xlabel('Horizon length N','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');
 grid on;
@@ -166,9 +172,9 @@ grid on;
 % N_max = [max([timings_N_yal(1,:),timings_N_exact_kkt(1,:)])];
 % cpu_min = [min([timings_N_yal(2,:),timings_N_exact_kkt(2,:)])];
 % cpu_max = [max([timings_N_yal(2,:),timings_N_exact_kkt(2,:)])];
-% axis([N_min, N_max+50, cpu_min/2, cpu_max*2])
+axis([timings_N_exact_kkt(1,1), timings_N_exact_kkt(1,end)+50, 0.005, 50])
 
 
 set(gca,'FontSize',10);
 set(gcf,'units','centimeters','Position', [0 0 15 10]);
-%exportgraphics(gcf,strcat('img/fig1.pdf'),'ContentType','vector');
+exportgraphics(gcf,strcat('img/fig1.pdf'),'ContentType','vector');
