@@ -118,7 +118,7 @@ plot(timings_M_gurobi(1,:), timings_M_gurobi(2,:),'LineWidth',2,'Color', colors(
 plot(timings_M_mosek(1,:), timings_M_mosek(2,:),'LineWidth',2,'Color', colors(4,:));
 
 % First plot with DisplayName for legend
-plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/200000, 'LineWidth', 2, 'Linestyle',':', 'DisplayName', '$\mathcal{O}(n_x^3)$', 'Color', [.5 .5 .5]);
+plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/500000, 'LineWidth', 2, 'Linestyle',':', 'DisplayName', '$\mathcal{O}(n_x^3)$', 'Color', [.5 .5 .5]);
 
 % Second plot without legend entry
 h = plot(timings_M_mosek(1,:), timings_M_mosek(1,:).^3/50, 'LineWidth', 2, 'Linestyle',':', 'Color', [.5 .5 .5]);

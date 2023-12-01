@@ -1,9 +1,15 @@
 
 %%
+clear all;
+close all;
+clc;
+
+
+%%
 expe01_init
 timings_N_exact_kkt = [];
 IT = [];
-for nn=3:50:300
+for nn=3:15:300
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf);
     timing_kkt = [];
@@ -23,6 +29,8 @@ for nn=3:50:300
     
 end
 histogram(IT)
+
+
 save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','msd')
 save('fast-sls-N.mat','timings_N_exact_kkt','msd');
 %%

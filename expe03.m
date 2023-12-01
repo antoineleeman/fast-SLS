@@ -4,12 +4,12 @@ clear all;
 close all;
 clc;
 
-L = 6;
-msd = ChainOfMassSpringDampers(L);
-Q = 10*eye(msd.nx);
+L = 30;
+msd = ChainOfMassSpringDampers_actuated(L);
+Q = 3*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
-n_sample = 10000;
+n_sample = 100;
 N=20;
 
 
@@ -20,7 +20,7 @@ it_kkt = [];
 for ii =1:n_sample
 
     ii
-    x0 =rand(msd.nx,1);
+    x0 =4*rand(msd.nx,1)-2;
     %x0 = -0.99*3*[ones(msd.nx,1)];
     %x0 = kron(ones(msd.nx/2,1),[1;0]);
     %x0= [0;1;zeros(msd.nx-2,1)];
@@ -31,6 +31,8 @@ for ii =1:n_sample
         [it_kkt] = [it_kkt;it];
     end
 end
+disp('percentage solved');
+length(it_kkt)/n_sample
 
 %save(getUniqueName('it_kkt'),'it_kkt','msd');
 %

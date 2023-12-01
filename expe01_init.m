@@ -12,8 +12,8 @@ clc;
 
 L = 12;
 msd = ChainOfMassSpringDampers(L);
-Q = eye(msd.nx);
+Q = 100*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
-n_sample = 3;
-N=30;
+n_sample = 10;
+N=20;
