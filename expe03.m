@@ -4,13 +4,13 @@ clear all;
 close all;
 clc;
 
-L = 30;
+L = 25;
 msd = ChainOfMassSpringDampers_actuated(L);
 Q = 3*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
 n_sample = 100;
-N=20;
+N=15;
 
 
 
