@@ -13,8 +13,8 @@ timings_M_kkt = [];
 IT_M_kkt = [];
 for mm = 3:10:80
     mm
-    msd = ChainOfMassSpringDampers(mm);
-    Q = eye(msd.nx);
+    msd = ChainOfMassSpringDampers_actuated(mm);
+    Q = 3*eye(msd.nx);
     R = eye(msd.nu);
     Qf = Q;
     kkt = KKT_SLS(N,Q,R,msd,Qf);
@@ -31,6 +31,8 @@ for mm = 3:10:80
     end
     timings_M_kkt = [timings_M_kkt,[mm; mean(timings_mm_kkt);std(timings_mm_kkt)]];
 end
+
+histogram(IT_M_kkt)
 save(getUniqueName('timings_M_kkt'),'timings_M_kkt','IT_M_kkt','msd','N','n_sample')
 save('timings_M_kkt.mat','timings_M_kkt','msd','N','n_sample');
 
@@ -40,8 +42,8 @@ expe01_init
 timings_M_gurobi = [];
 for mm = 3:1:7
     mm
-    msd = ChainOfMassSpringDampers(mm);
-    Q = eye(msd.nx);
+    msd = ChainOfMassSpringDampers_actuated(mm);
+    Q = 3*eye(msd.nx);
     R = eye(msd.nu);
     Qf = Q;
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'gurobi'); 
@@ -65,10 +67,10 @@ save('timings_M_gurobi.mat','timings_M_gurobi','msd','N','n_sample');
 %%
 expe01_init
 timings_M_mosek = [];
-for mm = 3:3:12
+for mm = 3:1:6
     mm
-    msd = ChainOfMassSpringDampers(mm);
-    Q = eye(msd.nx);
+    msd = ChainOfMassSpringDampers_actuated(mm);
+    Q = 3*eye(msd.nx);
     R = eye(msd.nu);
     Qf = Q;
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'mosek'); 
@@ -112,10 +114,10 @@ colors = [0.0504    0.0298    0.5280
     0.9400    0.9752    0.1313];
 
 
-plot(timings_M_kkt(1,:), timings_M_kkt(2,:),'LineWidth',2,'Color', colors(1,:));
+plot(timings_M_kkt(1,:), timings_M_kkt(2,:),'LineWidth',2,'Color', colors(1,:),'Marker','x');
 hold on;
-plot(timings_M_gurobi(1,:), timings_M_gurobi(2,:),'LineWidth',2,'Color', colors(3,:));
-plot(timings_M_mosek(1,:), timings_M_mosek(2,:),'LineWidth',2,'Color', colors(4,:));
+plot(timings_M_gurobi(1,:), timings_M_gurobi(2,:),'LineWidth',2,'Color', colors(3,:),'Marker','+');
+plot(timings_M_mosek(1,:), timings_M_mosek(2,:),'LineWidth',2,'Color', colors(4,:),'Marker','+');
 
 % First plot with DisplayName for legend
 plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/500000, 'LineWidth', 2, 'Linestyle',':', 'DisplayName', '$\mathcal{O}(n_x^3)$', 'Color', [.5 .5 .5]);

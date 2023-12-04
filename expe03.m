@@ -4,13 +4,13 @@ clear all;
 close all;
 clc;
 
-L = 25;
+L = 10;
 msd = ChainOfMassSpringDampers_actuated(L);
 Q = 3*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
-n_sample = 100;
-N=15;
+n_sample = 10;
+N=100;
 
 
 
@@ -33,7 +33,7 @@ for ii =1:n_sample
 end
 disp('percentage solved');
 length(it_kkt)/n_sample
-
+%%
 %save(getUniqueName('it_kkt'),'it_kkt','msd');
 %
 %clear all
@@ -53,4 +53,4 @@ grid on;
 
 set(gca,'FontSize',10);
 set(gcf,'units','centimeters','Position', [0 0 15 6]);
-exportgraphics(gcf,strcat('img/fig3.pdf'),'ContentType','vector');
+%exportgraphics(gcf,strcat('img/fig3.pdf'),'ContentType','vector');

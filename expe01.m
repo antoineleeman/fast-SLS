@@ -9,7 +9,7 @@ clc;
 expe01_init
 timings_N_exact_kkt = [];
 IT = [];
-for nn=3:15:150
+for nn=3:10:120
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf);
     timing_kkt = [];
@@ -37,7 +37,7 @@ save('fast-sls-N.mat','timings_N_exact_kkt','msd');
 expe01_init
 timings_N_rti_kkt = [];
 
-for nn=3:30:150
+for nn=3:30:120
     nn
     kkt = RTI_fast_SLS(nn,Q,R,msd,Qf);
     timing_kkt_rti = [];
@@ -59,7 +59,7 @@ save('rti-fast-sls-N.mat','timings_N_rti_kkt','msd')
 %%
 expe01_init
 timings_N_gurobi = [];
-for nn=3:3:15
+for nn=3:1:6
     nn
     solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'gurobi');
     timing_yal = [];
@@ -83,9 +83,9 @@ save('gurobi-sls-N.mat','timings_N_gurobi','msd')
 %%
 expe01_init
 timings_N_mosek = [];
-for nn=3:3:30
+for nn=3:2:10
     nn
-    solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek'); %x0 seems unused %% check if the bo are well reset
+    solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek');
     timing_yal = [];
     for ii =1:n_sample
         x0 =rand(msd.nx,1);
@@ -152,12 +152,12 @@ colors = [0.0504    0.0298    0.5280
     0.9722    0.5817    0.2541
     0.9400    0.9752    0.1313];
 figure(1);
-plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:),'LineWidth',2,'Color', colors(1,:));
+plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:),'LineWidth',2,'Color', colors(1,:),'Marker','x');
 hold on;
 set(gca, 'YScale', 'log');
 set(gca, 'XScale', 'log');
-plot(timings_N_gurobi(1,:), timings_N_gurobi(2,:),'LineWidth',2,'Color', colors(3,:));
-plot(timings_N_mosek(1,:), timings_N_mosek(2,:),'LineWidth',2,'Color', colors(4,:));
+plot(timings_N_gurobi(1,:), timings_N_gurobi(2,:),'LineWidth',2,'Color', colors(3,:),'Marker','+');
+plot(timings_N_mosek(1,:), timings_N_mosek(2,:),'LineWidth',2,'Color', colors(4,:),'Marker','+');
 %plot(timings_N_nominal(1,:), timings_N_nominal(2,:),'LineWidth',2,'Color', colors(4,:));
 %plot(timings_N_rti_kkt(1,:), timings_N_rti_kkt(2,:),'LineWidth',2,'Color', colors(3,:));
 

@@ -108,11 +108,21 @@ classdef KKT_SLS < OCP
             C = m.C;
             Cf = m.Cf;
 
+            R = obj.R;
+            Q = obj.Q;
+            Qf = obj.Qf;
+
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
             A_mat = zeros(0,nx);
             I = eye(nx);
             Zero = zeros(ni,m.nx);
             Zerof = zeros(ni_x,m.nx);
+
+
+            % % input augmentation for slacks
+            % B = [B, zeros(m.nx, m.ni)];
+            % C = [C, eye(m.ni)];
+            % R = blkdiag(R, zeros(m.ni));
 
             for kk=1:obj.N-1 % no constraint on last time step x_N: could add a equality or box constraint                                
                 S_fun =[A, B, -I ;...
@@ -131,15 +141,12 @@ classdef KKT_SLS < OCP
 
             A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
                 horzcat(rowPadding, S_fun)));
-            % affine part in the dynamics?: can use a lifting
-
-
 
             %add constraint on last time step
             obj.A_current = A_mat;
 
-            S_cost = blkdiag(obj.Q, obj.R);
-            obj.H_mat = blkdiag(kron(eye(obj.N), S_cost),obj.Qf);
+            S_cost = blkdiag(Q, R);
+            obj.H_mat = blkdiag(kron(eye(obj.N), S_cost),Qf);
             obj.H_mat = DM(sparse(obj.H_mat));
 
             obj.H_mat_sparsity = obj.H_mat.sparsity();
