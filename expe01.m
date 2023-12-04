@@ -9,7 +9,7 @@ clc;
 expe01_init
 timings_N_exact_kkt = [];
 IT = [];
-for nn=3:15:300
+for nn=3:15:150
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf);
     timing_kkt = [];
