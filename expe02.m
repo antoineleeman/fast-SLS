@@ -20,16 +20,16 @@ for mm = 3:10:80
     kkt = KKT_SLS(N,Q,R,msd,Qf);
     timing_mm_kkt = [];
     for ii=1:n_sample
-        x0 =rand(msd.nx,1);
+        x0 =4*rand(msd.nx,1)-2;
         tic
         [feasible,it] = kkt.solve(x0);
         time =toc;
         if feasible
-            timings_mm_kkt = [timing_mm_kkt;time];
+            timing_mm_kkt = [timing_mm_kkt;time];
             IT_M_kkt = [IT_M_kkt,it];
         end
     end
-    timings_M_kkt = [timings_M_kkt,[mm; mean(timings_mm_kkt);std(timings_mm_kkt)]];
+    timings_M_kkt = [timings_M_kkt,[mm; mean(timing_mm_kkt);std(timing_mm_kkt)]];
 end
 
 histogram(IT_M_kkt)
@@ -39,6 +39,7 @@ save('timings_M_kkt.mat','timings_M_kkt','msd','N','n_sample');
 
 %%
 expe01_init
+n_sample = 3;
 timings_M_gurobi = [];
 for mm = 3:1:7
     mm
@@ -49,7 +50,7 @@ for mm = 3:1:7
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'gurobi'); 
     timings_mm_yalmip = [];
     for ii=1:n_sample
-        x0 =rand(msd.nx,1);
+        x0 =4*rand(msd.nx,1)-2;
         tic
         feasible = solver_yalmip.solve(x0);
         time =toc;
@@ -67,7 +68,8 @@ save('timings_M_gurobi.mat','timings_M_gurobi','msd','N','n_sample');
 %%
 expe01_init
 timings_M_mosek = [];
-for mm = 3:1:6
+n_sample = 3;
+for mm = 3:1:8
     mm
     msd = ChainOfMassSpringDampers_actuated(mm);
     Q = 3*eye(msd.nx);
@@ -76,7 +78,7 @@ for mm = 3:1:6
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'mosek'); 
     timings_mm_yalmip = [];
     for ii=1:n_sample
-        x0 =rand(msd.nx,1);
+        x0 =4*rand(msd.nx,1)-2;
         tic
         feasible = solver_yalmip.solve(x0);
         time =toc;
@@ -114,7 +116,7 @@ colors = [0.0504    0.0298    0.5280
     0.9400    0.9752    0.1313];
 
 
-plot(timings_M_kkt(1,:), timings_M_kkt(2,:),'LineWidth',2,'Color', colors(1,:),'Marker','x');
+errorbar(timings_M_kkt(1,:), timings_M_kkt(2,:), timings_M_kkt(3,:),'LineWidth',2,'Color', colors(1,:));
 hold on;
 plot(timings_M_gurobi(1,:), timings_M_gurobi(2,:),'LineWidth',2,'Color', colors(3,:),'Marker','+');
 plot(timings_M_mosek(1,:), timings_M_mosek(2,:),'LineWidth',2,'Color', colors(4,:),'Marker','+');
@@ -142,7 +144,7 @@ grid on;
 % cpu_min = [min([timings_M_gurobi(2,:),timings_M_kkt(2,:)])];
 % cpu_max = [max([timings_M_gurobi(2,:),timings_M_kkt(2,:)])];
 % axis([nx_min, nx_max, cpu_min/2, cpu_max*2])
-axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+50, 0.005, 150])
+%axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+50, 0.005, 150])
 
 
 set(gca,'FontSize',10);

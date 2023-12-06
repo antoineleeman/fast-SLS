@@ -28,6 +28,7 @@ classdef KKT_SLS < OCP
         mu_current;
         K_current;
         CONV_EPS;
+            MAX_ITER;
 
     end
     
@@ -35,7 +36,7 @@ classdef KKT_SLS < OCP
         function obj = KKT_SLS(N,Q,R,m,Qf)
             obj@OCP(N,Q,R,m,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
-            obj.epsilon = 1e-3;
+            obj.epsilon = 1e-10;
             obj = obj.initialize_solver_forward('osqp');
 
             obj.Q_reg = 1e-3*eye(m.nx);
@@ -46,20 +47,22 @@ classdef KKT_SLS < OCP
             obj.nominal_ubg = [obj.nominal_ubg; zeros(m.nx,1); m.df];
             obj.ubg_current = obj.nominal_ubg;
             obj.CONV_EPS = 1e-8;
+            obj.MAX_ITER = 30;
 
         end
         
-        function [feasible,ii, x_bar, u_bar, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
-            % check size of x0            
-            MAX_ITER = 30;
+        function [feasible,ii, delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
 
             m = obj.m;
             N = obj.N;
             ni = m.ni;
+
+            MAX_ITER = obj.MAX_ITER;
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
             it_x = cell(MAX_ITER,1);
             it_u = cell(MAX_ITER,1);
+            delta = cell(MAX_ITER,1);
 
             feasible = false;
             obj.ubg_current = obj.nominal_ubg;
@@ -78,7 +81,9 @@ classdef KKT_SLS < OCP
                 end
                 it_x{ii} = x_bar;
                 it_u{ii} = u_bar;
-                if full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar)))) <= obj.CONV_EPS
+
+                delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
+                if delta{ii} <= obj.CONV_EPS
                     disp('converged!');
                     feasible =true;
                     return;

@@ -15,7 +15,7 @@ for nn=3:10:120
     timing_kkt = [];
 
     for ii =1:n_sample
-        x0 =rand(msd.nx,1);
+        x0 =4*rand(msd.nx,1)-2;
         tic
         [feasible, it ] = kkt.solve(x0);
         time =toc;
@@ -31,8 +31,8 @@ end
 histogram(IT)
 
 
-save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','msd')
-save('fast-sls-N.mat','timings_N_exact_kkt','msd');
+%save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','msd')
+%save('fast-sls-N.mat','timings_N_exact_kkt','msd');
 %%
 expe01_init
 timings_N_rti_kkt = [];
@@ -57,14 +57,15 @@ save('rti-fast-sls-N.mat','timings_N_rti_kkt','msd')
 
 
 %%
-expe01_init
+expe01_init;
+n_sample = 3;
 timings_N_gurobi = [];
-for nn=3:1:6
+for nn=3:1:10
     nn
     solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'gurobi');
     timing_yal = [];
     for ii =1:n_sample
-        x0 =rand(msd.nx,1);
+        x0 =4*rand(msd.nx,1)-2;
         tic
         feasible = solver_yalmip.solve(x0);
         time =toc;
@@ -83,12 +84,13 @@ save('gurobi-sls-N.mat','timings_N_gurobi','msd')
 %%
 expe01_init
 timings_N_mosek = [];
-for nn=3:2:10
+n_sample = 3;
+for nn=3:2:15
     nn
     solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek');
     timing_yal = [];
     for ii =1:n_sample
-        x0 =rand(msd.nx,1);
+        x0 =4*rand(msd.nx,1)-2;
         tic
         feasible = solver_yalmip.solve(x0);
         time =toc;
@@ -134,7 +136,7 @@ close all;
 clf;
 load('gurobi-sls-N.mat')
 msd.nx
-load('fast-sls-N.mat')
+load('fast-sls-N.mat') % use this: 05-Dec-2023_14_17_22__timings_N_exact_kkt
 msd.nx
 load('mosek-sls-N.mat')
 msd.nx
@@ -152,7 +154,7 @@ colors = [0.0504    0.0298    0.5280
     0.9722    0.5817    0.2541
     0.9400    0.9752    0.1313];
 figure(1);
-plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:),'LineWidth',2,'Color', colors(1,:),'Marker','x');
+errorbar(timings_N_exact_kkt(1,:), timings_N_exact_kkt(2,:),timings_N_exact_kkt(3,:),'LineWidth',2,'Color', colors(1,:),'Marker','x');
 hold on;
 set(gca, 'YScale', 'log');
 set(gca, 'XScale', 'log');
@@ -180,7 +182,7 @@ grid on;
 % N_max = [max([timings_N_yal(1,:),timings_N_exact_kkt(1,:)])];
 % cpu_min = [min([timings_N_yal(2,:),timings_N_exact_kkt(2,:)])];
 % cpu_max = [max([timings_N_yal(2,:),timings_N_exact_kkt(2,:)])];
-axis([timings_N_exact_kkt(1,1), timings_N_exact_kkt(1,end)+50, 0.005, 50])
+%axis([timings_N_exact_kkt(1,1), timings_N_exact_kkt(1,end)+50, 0.005, 50])
 
 
 set(gca,'FontSize',10);

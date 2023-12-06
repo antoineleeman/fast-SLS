@@ -9,7 +9,7 @@ msd = ChainOfMassSpringDampers_actuated(L);
 Q = 3*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
-n_sample = 1000;
+n_sample = 1;
 N=25;
 
 
@@ -17,21 +17,29 @@ N=25;
 kkt = KKT_SLS(N,Q,R,msd,Qf);
 it_kkt = [];
 
-for ii =1:n_sample
+alpha_delta = zeros(kkt.MAX_ITER,10);
+ii=1;
+for alpha =0:0.1:1
+
     ii
-    x0 =4*rand(msd.nx,1)-2;
+    %x0 =4*rand(msd.nx,1)-2;
+    x0 = alpha*2.55*ones(msd.nx,1);
+    %x0 = -0.99*3*[ones(msd.nx,1)];
+    %x0 = kron(ones(msd.nx/2,1),[1;0]);
+    %x0= [0;1;zeros(msd.nx-2,1)];
     tic
-    [feasible,it] = kkt.solve(x0);
+    [feasible,it,delta] = kkt.solve(x0);
     time =toc;
-    if feasible
-        [it_kkt] = [it_kkt;it];
-    end
+
+    alpha_delta(:,ii) = cell2mat(delta);
+
+    ii = ii+1;
 end
 disp('percentage solved');
 length(it_kkt)/n_sample
-
-save(getUniqueName('it_kkt'),'it_kkt','msd');
-%%
+%
+%save(getUniqueName('it_kkt'),'it_kkt','msd');
+%
 %clear all
 %close all
 %clf
@@ -49,4 +57,4 @@ grid on;
 
 set(gca,'FontSize',10);
 set(gcf,'units','centimeters','Position', [0 0 15 6]);
-exportgraphics(gcf,strcat('img/fig3.pdf'),'ContentType','vector');
+%exportgraphics(gcf,strcat('img/fig4.pdf'),'ContentType','vector');
