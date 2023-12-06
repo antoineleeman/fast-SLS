@@ -51,7 +51,7 @@ classdef KKT_SLS < OCP
 
         end
         
-        function [feasible,ii, delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+        function [feasible,ii, t, delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
 
             m = obj.m;
             N = obj.N;
@@ -91,9 +91,11 @@ classdef KKT_SLS < OCP
                     current_x = x_bar;
                     current_u = u_bar;
                 end
+                tic;
                 obj = obj.update_cost_tube(); 
                 [obj, K] = obj.backward_solve();
                 [obj,beta] = obj.update_backoff();
+                t = toc;
             end
             disp('no feasible solution found');
 
@@ -178,7 +180,7 @@ classdef KKT_SLS < OCP
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
-            tic;
+            
             sol = obj.solver_forward('a',obj.A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.ubg_current,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
             time = toc;
             %obj.lbx_fun(x0) and should also include the terminal condition                        

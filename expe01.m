@@ -8,31 +8,36 @@ clc;
 %%
 expe01_init
 timings_N_exact_kkt = [];
+timings_N_exact_ff = [];
+
 IT = [];
 for nn=3:10:120
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf);
     timing_kkt = [];
-
+    timing_ff = [];
     for ii =1:n_sample
         x0 =4*rand(msd.nx,1)-2;
         tic
-        [feasible, it ] = kkt.solve(x0);
+        [feasible, it, t] = kkt.solve(x0);
         time =toc;
         if feasible
             [timing_kkt] = [timing_kkt;time];
+            timing_ff = [timing_ff; t];
             IT = [IT,it];
         end
     end
 
     timings_N_exact_kkt = [timings_N_exact_kkt,[nn; mean(timing_kkt);std(timing_kkt)]];
-    
+    timings_N_exact_ff = [timings_N_exact_ff,[nn; mean(timing_ff);std(timing_ff)]];
+
+
 end
 histogram(IT)
 
 
-%save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','msd')
-%save('fast-sls-N.mat','timings_N_exact_kkt','msd');
+save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','msd')
+save('fast-sls-N.mat','timings_N_exact_kkt','msd');
 %%
 expe01_init
 timings_N_rti_kkt = [];
@@ -163,16 +168,16 @@ plot(timings_N_mosek(1,:), timings_N_mosek(2,:),'LineWidth',2,'Color', colors(4,
 %plot(timings_N_nominal(1,:), timings_N_nominal(2,:),'LineWidth',2,'Color', colors(4,:));
 %plot(timings_N_rti_kkt(1,:), timings_N_rti_kkt(2,:),'LineWidth',2,'Color', colors(3,:));
 
-plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^(1)/5500 ,'LineWidth',2, 'Linestyle',':', 'Color', [.5 .5 .5]);
+plot(timings_N_exact_kkt(1,:), timings_N_exact_kkt(1,:).^(2)/55000 ,'LineWidth',2, 'Linestyle',':', 'Color', [.5 .5 .5]);
 
-h = plot(timings_N_mosek(1,:), timings_N_mosek(1,:).^3/500 ,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
+h = plot(timings_N_mosek(1,:), timings_N_mosek(1,:).^3/100 /2,'LineWidth',2, 'Linestyle','--','Color', [.5 .5 .5]);
 %set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
-h = plot(timings_N_gurobi(1,:), timings_N_gurobi(1,:).^2/10 ,'LineWidth',2, 'Linestyle','-.','Color', [.5 .5 .5]);
+h = plot(timings_N_gurobi(1,:), timings_N_gurobi(1,:).^2/2.5/2 ,'LineWidth',2, 'Linestyle','-.','Color', [.5 .5 .5]);
 %set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
 
 
-l = legend('fast-SLS','gurobi','mosek','$\mathcal{O}(N)$','$\mathcal{O}(N^{3})$','$\mathcal{O}(N^{2})$','interpreter','latex');
+l = legend('fast-SLS','gurobi','mosek','$\mathcal{O}(N^2)$','$\mathcal{O}(N^{3})$','$\mathcal{O}(N^{2})$','interpreter','latex');
 l.Position = [     0.6506    0.6926    0.1582    0.1322
 ];
 xlabel('Horizon length N','interpreter','latex');
