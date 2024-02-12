@@ -51,7 +51,7 @@ classdef KKT_SLS < OCP
 
         end
         
-        function [feasible,ii, t, delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+        function [feasible,ii, time1, time2,delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
 
             m = obj.m;
             N = obj.N;
@@ -67,10 +67,14 @@ classdef KKT_SLS < OCP
             feasible = false;
             obj.ubg_current = obj.nominal_ubg;
             obj.beta_kj = obj.epsilon.*ones(N-1,N-1,ni);
-
+            time1 = 0;
+            time2 = 0;
             for ii=1:MAX_ITER
                 try 
+                    tic
                     [obj, ~,x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
+                    t = toc;
+                    time2 = time2+t;
                 catch e
                     if contains(e.message, 'error_on_fail')
                         disp('infeasible forward solve -- use soft constraints');
@@ -86,16 +90,25 @@ classdef KKT_SLS < OCP
                 if delta{ii} <= obj.CONV_EPS
                     disp('converged!');
                     feasible =true;
+                    u_bar
                     return;
                 else
                     current_x = x_bar;
                     current_u = u_bar;
                 end
+                tic
+                obj = obj.update_cost_tube();  
+                t = toc;
+                time2 = time2+t;
+                
                 tic;
-                obj = obj.update_cost_tube(); 
                 [obj, K] = obj.backward_solve();
+                t1 = toc;
+                time1 = time1+t1;
+                tic;
                 [obj,beta] = obj.update_backoff();
                 t = toc;
+                time2 = time2+t;
             end
             disp('no feasible solution found');
 

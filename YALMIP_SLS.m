@@ -22,6 +22,7 @@ classdef YALMIP_SLS < OCP
             [ V0, errorcode] = obj.yalmip_solve(x0);
             if errorcode == 0
                 feasible = true;
+                V0
                 disp('optimal solution found')
             else
                 % Solver reports an infeasible solution or an error
@@ -140,7 +141,7 @@ classdef YALMIP_SLS < OCP
             options = sdpsettings('verbose',1,'solver',solver);
             %options = sdpsettings('verbose',1);
 
-            obj.yalmip_solve = optimizer(constraints,objective,options,[X0],V(1));
+            obj.yalmip_solve = optimizer(constraints,objective,options,[X0],V(:,1));
 
         end
 
