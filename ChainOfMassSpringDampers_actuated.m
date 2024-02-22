@@ -43,7 +43,7 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
                 zeros(obj.nu,obj.nx) ,eye(obj.nu);
                 zeros(obj.nu,obj.nx) ,-eye(obj.nu);
                 ];
-            obj.d = [x_max*ones(obj.nx,1);x_max*ones(obj.nx,1);x_max*ones(obj.nu,1);x_max*ones(obj.nu,1);];
+            obj.d = [x_max*ones(obj.nx,1);x_max*ones(obj.nx,1);u_max*ones(obj.nu,1);u_max*ones(obj.nu,1);]; %% wrong??
             obj.Cf = [eye(obj.nx);
                 -eye(obj.nx);
                 [zeros(2*obj.nu,obj.nx) ]]; % no terminal constraint
