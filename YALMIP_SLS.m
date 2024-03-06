@@ -17,8 +17,6 @@ classdef YALMIP_SLS < OCP
     %All the KKT related functions for the SLS problem
     
     properties
-        Q_reg;
-        R_reg;
         yalmip_solve;
         solver;
     end
@@ -26,11 +24,7 @@ classdef YALMIP_SLS < OCP
     methods
         function obj = YALMIP_SLS(N,Q,R,m,Qf,solver)
             obj@OCP(N,Q,R,m,Qf);
-
-            obj.Q_reg = 1e-3*eye(m.nx);
-            obj.R_reg = 1e-3*eye(m.nu);
             obj = obj.initialize_solve(solver);
-
         end
         
         function [feasible, V0] = solve(obj,x0) %% initial conditions should be given here: after the initialization
@@ -73,8 +67,8 @@ classdef YALMIP_SLS < OCP
                 objective = objective + Z(:,k)'*obj.Q*Z(:,k) + V(:,k)'*obj.R*V(:,k);
             end
             
-            %objective = objective + norm([kron(eye(N+1),m.Q_cost)* Phi_x;kron(eye(N+1),m.Q_cost)* Phi_u],'fro')^2;
-            objective = objective + norm([Phi_x;Phi_u],'fro')^2; %% change regulizer
+            objective = objective + norm([kron(eye(N+1),obj.Q_reg)* Phi_x;kron(eye(N+1),obj.R_reg)* Phi_u],'fro')^2;
+            %objective = objective + norm([Phi_x;Phi_u],'fro')^2; %% change regulizer
 
             % Initialise the constraints
             constraints = X0 == Z(:,1);

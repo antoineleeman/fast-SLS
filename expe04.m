@@ -38,7 +38,9 @@ for ii =1:n_sample
     [~,~,~,~,~,V0_kkt] = kkt.solve(x0);
     [~,V0_mosek] = solver_yalmip.solve(x0);
     time =toc;
-    if norm(full(V0_kkt) - V0_mosek,'inf')>= 1e-3
+        norm(full(V0_kkt) - V0_mosek,'inf')
+
+    if norm(full(V0_kkt) - V0_mosek,'inf')>= 1e-4
         norm(full(V0_kkt) - V0_mosek,'inf')
         faulty_implementation = true;
     end

@@ -31,12 +31,7 @@ classdef KKT_SLS < OCP
         lbx_fun;
         ubx_fun;
         A_current;
-
-        Q_reg;
-        R_reg;
-
-        s_soft;
-
+        
         beta_kj;
         bo_j;
         epsilon;
@@ -55,10 +50,6 @@ classdef KKT_SLS < OCP
             obj.epsilon = 1e-10;
 
             obj = obj.initialize_solver_forward('osqp');
-
-            obj.Q_reg = 1e-3*eye(m.nx);
-            obj.R_reg = 1e-3*eye(m.nu);
-                        
             obj.nominal_ubg = [kron(ones(obj.N-1,1), [zeros(m.nx,1); m.d])]; % assume time invariant constraints + move to initialization
             
             % todo: add terminal constraint
