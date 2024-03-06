@@ -17,10 +17,8 @@ classdef Integrator < LinearSystem
 
     properties
     end
-
     methods
         function obj = Integrator()
-            %add the dt
             obj.nx=2;
             obj.nu=1;
             obj.ni = 6;

@@ -13,11 +13,8 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-
-
 classdef KKT_SLS < OCP
     %All the KKT related functions for the SLS problem
-    
     properties
         current_bo;
         current_adj_corr;
@@ -26,7 +23,7 @@ classdef KKT_SLS < OCP
 
         dh_dyk;
         dh_dxN;
-        H_mat; % could be made a function, for instance for non-qaudratic cost
+        H_mat;
         H_mat_sparsity;
         lbg;
         ubg_current;
@@ -49,8 +46,6 @@ classdef KKT_SLS < OCP
         CONV_EPS;
         MAX_ITER;
 
-        m_soft;
-
     end
     
     methods
@@ -58,8 +53,6 @@ classdef KKT_SLS < OCP
             obj@OCP(N,Q,R,m,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.epsilon = 1e-10;
-            obj.s_soft = 1e6;
-            obj.m_soft = m.soften();
 
             obj = obj.initialize_solver_forward('osqp');
 
@@ -68,7 +61,7 @@ classdef KKT_SLS < OCP
                         
             obj.nominal_ubg = [kron(ones(obj.N-1,1), [zeros(m.nx,1); m.d])]; % assume time invariant constraints + move to initialization
             
-            %terminal constraint
+            % todo: add terminal constraint
             obj.nominal_ubg = [obj.nominal_ubg; zeros(m.nx,1); m.df];
             obj.ubg_current = obj.nominal_ubg;
             obj.CONV_EPS = 1e-8;
@@ -76,7 +69,7 @@ classdef KKT_SLS < OCP
 
         end
         
-        function [feasible,ii, time1, time2,delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+        function [feasible,ii, time1, time2,delta, K] = solve(obj,x0) 
 
             m = obj.m_soft;
             m_hard = obj.m;
@@ -96,7 +89,6 @@ classdef KKT_SLS < OCP
             time1 = 0;
             time2 = 0;
             for ii=1:MAX_ITER
-                ii
                 try 
                     tic
                     [obj, ~,x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
@@ -147,9 +139,7 @@ classdef KKT_SLS < OCP
 
         function obj = initialize_solver_forward(obj,solver)
             import casadi.*
-            %m=obj.m;
-
-            m = obj.m_soft;
+            m=obj.m;
             
             R = blkdiag(obj.R, obj.s_soft*eye(m.ni)); % include the soft constraints
             Q = obj.Q;
@@ -171,13 +161,7 @@ classdef KKT_SLS < OCP
             Zero = zeros(ni,m.nx);
             Zerof = zeros(ni_x,m.nx);
 
-
-            % % input augmentation for slacks
-            % B = [B, zeros(m.nx, m.ni)];
-            % C = [C, eye(m.ni)];
-            % R = blkdiag(R, zeros(m.ni));
-
-            for kk=1:obj.N-1 % no constraint on last time step x_N: could add a equality or box constraint                                
+            for kk=1:obj.N-1 % todo: no constraint on last time step x_N: could add a equality or box constraint                                
                 S_fun =[A, B, -I ;...
                 C, Zero];
                 columnPadding = casadi.DM.zeros((kk-1)*(m.nx+m.ni), m.nu + m.nx);
@@ -185,17 +169,15 @@ classdef KKT_SLS < OCP
                 
                 A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
                     horzcat(rowPadding, S_fun)));
-                % affine part in the dynamics?: can use a lifting
+                % todo: add affine part in the dynamics (e.g., linearized dynamics is affine): we could use a lifting
             end
             S_fun =[[A, B, -I ];...
-                [Cf*A, Cf*B, Zerof]]; % update RHS of constraint
+                [Cf*A, Cf*B, Zerof]];
             columnPadding = casadi.DM.zeros((N-1)*(nx+ni), nu + nx);
             rowPadding = casadi.DM.zeros(nx+ni_x, (N-1)*(nx+nu));
 
             A_mat = sparsify(vertcat(horzcat(A_mat, columnPadding), ...
                 horzcat(rowPadding, S_fun)));
-
-            %add constraint on last time step
             obj.A_current = A_mat;
 
             S_cost = blkdiag(Q, R);
@@ -229,12 +211,9 @@ classdef KKT_SLS < OCP
             
             sol = obj.solver_forward('a',obj.A_current,'h',obj.H_mat,'lba',obj.lbg,'uba',obj.ubg_current,'g',obj.current_adj_corr ,'lbx',obj.lbx_fun(x0),'ubx',obj.ubx_fun(x0));
             time = toc;
-            %obj.lbx_fun(x0) and should also include the terminal condition                        
-            %obj.A_current = obj.A_mat_fun(sol.x);
-            % add update A_current;
             obj.current_nominal = sol.x;
 
-            y_sol = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);%make this as a function
+            y_sol = reshape([sol.x;zeros(nu,1)], [nx+nu, N+1]);
             x_bar = y_sol(1:nx,:);
             u_bar = y_sol(nx+1:end, 1:N);
 
@@ -245,7 +224,7 @@ classdef KKT_SLS < OCP
             obj.mu_current = full(mu_bar);
         end
 
-        function [obj, K] = backward_solve(obj) % could be computed using HPIPM! + we are evaluating twice the dynamics
+        function [obj, K] = backward_solve(obj)
 
             m=obj.m;
             N = obj.N;
@@ -262,22 +241,22 @@ classdef KKT_SLS < OCP
             A = m.A;
             B = m.B;
             for jj=1:N-1
-                eta_Nj = obj.eta_kj{N-1,jj}(1:1:m.ni_x);% mistake?
-                S{N,jj} = C_f' * diag(eta_Nj) *C_f+ obj.Q_reg;%should be Q_f
+                eta_Nj = obj.eta_kj{N-1,jj}(1:1:m.ni_x);
+                S{N,jj} = C_f' * diag(eta_Nj) *C_f+ obj.Q_reg;
 
                 for kk=N-1:-1:jj 
                     Ck = C'*diag(obj.eta_kj{kk,jj})*C;
                     Cxk = Ck(1:nx, 1:nx) + obj.Q_reg;
                     Cuk = Ck(nx+1:end, nx+1:end) + obj.R_reg;
                     
-                    % Cxuk missing!
+                    % todo: Cxuk missing!
                     [K{kk,jj},S{kk,jj}] = obj.riccati_step(A,B,Cxk,Cuk,S{kk+1,jj});
                 end
             end
             obj.K_current = K;
         end
 
-        function [obj, bo_j] = update_backoff(obj) %% use the same controller
+        function [obj, bo_j] = update_backoff(obj)
             m=obj.m;
             N = obj.N;
             nx = m.nx;
@@ -286,13 +265,13 @@ classdef KKT_SLS < OCP
 
             C = m.C;
             Phi_x_kj = cell(N,N);
-            Phi_u_kj = cell(N,N); % !! should not be the same size!
+            Phi_u_kj = cell(N,N); %todo: change size
 
             beta_kj = zeros(N-1,N-1,ni); % no tightening for the first time step
             A = m.A;
             B = m.B;
             for jj=1:N-1 % iteration on the disturbance number
-                Phi_x_kj{jj,jj} = m.E; % could be time-varying (nonlinear case)
+                Phi_x_kj{jj,jj} = m.E; % todo: make this time-varying (especially for nonlinear case)
                 for kk=jj:N-1
                     Phi_u_kj{kk,jj} = obj.K_current{kk,jj}*Phi_x_kj{kk,jj};
                     beta_kj(kk,jj,:) = vecnorm(C*full([Phi_x_kj{kk,jj};Phi_u_kj{kk,jj}]),2,2);
@@ -301,11 +280,11 @@ classdef KKT_SLS < OCP
                 end
             end
 
-            bo_j = squeeze(sum(beta_kj,2))'; %% scales with N^2 !!
-            obj.beta_kj = beta_kj; %% need to add epsilon?
+            bo_j = squeeze(sum(beta_kj,2))'; % remark: this operation scales with N^2 !
+            obj.beta_kj = beta_kj;
             obj.bo_j = bo_j;
 
-            bo_0j = zeros(ni,1);% no tightening for the first time step
+            bo_0j = zeros(ni,1); %no tightening for the first time step
             update_ubg = reshape([zeros(nx,N); m.d - [bo_0j, bo_j]],[(N)*(ni+nx),1]);
             obj.ubg_current = update_ubg;
 

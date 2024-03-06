@@ -17,7 +17,6 @@ classdef OCP
             obj.m = m;
             obj.xf = zeros(m.nx,1);
             obj.Qf = Qf;
-            % add assert with size of Q and R
         end
         
         function cost = getStageCost(obj,x,u)
@@ -27,7 +26,7 @@ classdef OCP
             cost = (x)'*obj.Qf*(x);
         end
     end
-    methods(Static) % implement with square roots!
+    methods(Static) % todo: implement with square roots!
 
         function [K,S] = riccati_step(A,B,Cx,Cu,Sk)
             K = -(Cu+B'*Sk*B)\(B'*Sk*A);

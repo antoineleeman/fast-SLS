@@ -41,7 +41,7 @@ for nn=3:10:120
 end
 
 save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','timings_N_exact_ff','msd')
-save('fast-sls-N.mat','timings_N_exact_kkt','timings_N_exact_ff','msd');
+%save('fast-sls-N.mat','timings_N_exact_kkt','timings_N_exact_ff','msd');
 
 %%
 init;

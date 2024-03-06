@@ -16,11 +16,10 @@
 classdef ChainOfMassSpringDampers_actuated < LinearSystem
 
     properties
-        M; %number of masses
+        M;
         mass;
         k_constant;
-        d_constant;%mass,spring, damping constant
-
+        d_constant;
     end
 
     methods
@@ -28,7 +27,7 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
             obj.mass = 1;
             obj.k_constant=10;
             obj.d_constant=2;
-            obj.dt = 0.5; %sampling time
+            obj.dt = 0.5;
             
             obj = initialization(obj,M);
 
@@ -36,42 +35,26 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
            
             obj.E = 0.5*eye(obj.nw);
 
-            u_max = 0.5;
+            u_max = 4; %% TYPO FROM PAPER!
             x_max = 4;
 
-            %obj.d = u_max;
             obj.C = [eye(obj.nx),zeros(obj.nx,obj.nu,1);
                 -eye(obj.nx),zeros(obj.nx,obj.nu,1);
                 zeros(obj.nu,obj.nx) ,eye(obj.nu);
                 zeros(obj.nu,obj.nx) ,-eye(obj.nu);
                 ];
-            obj.d = [x_max*ones(obj.nx,1);x_max*ones(obj.nx,1);u_max*ones(obj.nu,1);u_max*ones(obj.nu,1);]; %% wrong??
+            obj.d = [x_max*ones(obj.nx,1);x_max*ones(obj.nx,1);u_max*ones(obj.nu,1);u_max*ones(obj.nu,1);];
             obj.Cf = [eye(obj.nx);
                 -eye(obj.nx);
                 [zeros(2*obj.nu,obj.nx) ]]; % no terminal constraint
             obj.df = [x_max*ones(2*obj.nx,1);u_max*ones(2*obj.nu,1)];
             obj.ni = 2*obj.nx+2*obj.nu;
             obj.ni_x =2*obj.nx+2*obj.nu;
-
-
-            % %obj.d = u_max;
-            % obj.C = [zeros(2,obj.nx) ,ones(2,1)];
-            % obj.d = [u_max*ones(2,1)];
-            % 
-            % obj.Cf = [zeros(2,obj.nx)];
-            % obj.df = [u_max*ones(2,1)];
-            % obj.ni = 2;
-            % obj.ni_x =2;
-
-
-
         end
         
         % taken from: https://gitlab.ethz.ch/ics/NMPC-StabilityAnalysis/-/blob/main/LinearExample_ChainOfMassSpringDampers/main.m?ref_type=heads
         function obj = initialization(obj,M)
 
-            % 1. Define model- Large scale mass-spring damper system
-            
             nxx=2;%number of local states
             if M<3
                error('not programmed') 
