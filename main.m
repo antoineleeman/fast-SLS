@@ -13,10 +13,10 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-expe00
-expe01
-expe02
-expe03
-expe04
+expe00 % simulation with double integrator
+expe01 % solvers comparison for increasing horizon length
+expe02 % solvers comparison for increasing state dimension
+expe03 % evaluation of the number of iteration required before convergence
+expe04 % sanity check: all solvers should return the same optimal solution
 
-plots_paper
+plots_paper % plots as in the paper

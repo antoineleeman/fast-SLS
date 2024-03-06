@@ -5,11 +5,11 @@ This repository contains the MATLAB code that accompanies the research paper:
 
 ![Project Image](fig4.png)
 
-The paper is freely available on [arXiv](https://arxiv.org/abs/2304.00752) or [IEEE website](https://ieeexplore.ieee.org/document/10383271)
+The paper is freely available on [arXiv](https://arxiv.org/abs/2401.13762) 
 
 ## Prerequisites
-- MATLAB (tested with version R2020b)
-- Casadi
+- MATLAB (tested with version R2023b running on Macbook Pro with M1 processor with 8 cores and 16GB of RAM running macOS Sonoma)
+- Casadi (tested with casadi-3.6.4-osx_arm64-matlab2018b )
 - Yalmip, with Mosek and Gurobi (only needed for performance comparison)
 
 ## Installation
