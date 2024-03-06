@@ -139,7 +139,7 @@ classdef KKT_SLS < OCP
             import casadi.*
             m=obj.m;
             
-            R = blkdiag(obj.R, obj.s_soft*eye(m.ni)); % include the soft constraints
+            R = obj.R;
             Q = obj.Q;
             Qf = obj.Qf;
 
@@ -201,7 +201,7 @@ classdef KKT_SLS < OCP
 
         function [obj, time, x_bar, u_bar, lambda_bar, mu_bar] = forward_solve(obj,x0)
             import casadi.*
-            m=obj.m_soft;
+            m=obj.m;
             N = obj.N;
             nx = m.nx;
             nu = m.nu;

@@ -43,8 +43,6 @@ classdef YALMIP_SLS < OCP
                 feasible = false;
                 disp('Unfeasible');
             end
-
-
         end
 
 
