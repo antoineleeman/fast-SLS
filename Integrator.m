@@ -5,34 +5,15 @@
 % License: MIT
 % Reference:
 %{
-@inproceedings{leeman2023a,
-  title = {Predictive safety filter using system level synthesis},
-  year = {2023},
-  booktitle = {Proceedings of the 5th Annual Learning for Dynamics and Control Conference, PMLR},
-  volume = {211},
-  author={Leeman, Antoine P. and K{\"o}hler, Johannes and Benanni, Samir and Zeilinger, Melanie N.},
-  pages = {1180-1192},
-  doi = {10.3929/ethz-b-000615512}
+@inproceedings{
+
 }
 %}
-% Link: https://arxiv.org/abs/2212.02111
+% Link: 
 % -----------------------------------------------------------------------------
-classdef Integrator 
+classdef Integrator < LinearSystem
 
     properties
-        A; %dyn, ct or dt??
-        B; %input
-        C; % constraint x
-        d;
-        Cf; % terminal constraint
-        df;
-        E; % noise matrix
-        nx; % number of state variables
-        nu; % number of input variables
-        nw; % size of the disturbance
-        ni; % size of the constraints
-        ni_x; %number of terminal constraint
-        dt; % time step
     end
 
     methods

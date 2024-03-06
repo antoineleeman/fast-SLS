@@ -113,8 +113,9 @@ grid on;
 % cpu_min = [min([timings_M_gurobi(2,:),timings_M_kkt(2,:)])];
 % cpu_max = [max([timings_M_gurobi(2,:),timings_M_kkt(2,:)])];
 % axis([nx_min, nx_max, cpu_min/2, cpu_max*2])
-axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.005, 150])
 
+axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.005, 150])
+xticks([10^1 70]); % Set desired tick positions
 set(gca,'FontSize',12);
 set(gcf,'units','centimeters','Position', [0 0 16.1*2 10]);
 exportgraphics(gcf,strcat('img/fig4.pdf'),'ContentType','vector');

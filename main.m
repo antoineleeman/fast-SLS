@@ -1,26 +1,25 @@
 clear all;
 close all;
 clc;
-%%
+%
 m = Integrator();
 Q = eye(m.nx);
-R = 100*eye(m.nu);
+R = eye(m.nu);
 Qf = Q;
 
-grid_density = 15;
+grid_density = 10;
 x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
 N = 15;
 %
+
 kkt = KKT_SLS(N,Q,R,m,Qf); %% check if the bo are well reset
 IT = [];
-mosek = YALMIP_SLS(N,Q,R,m,Qf,'gurobi'); 
 for ii = 1:length(x1_range)
     for jj = 1:length(x2_range)
         x0 = [x1_range(ii); x2_range(jj)];
         [feasible,it] = kkt.solve(x0);
-        mosek.solve(x0);
         if feasible
             IT = [IT;it];
         end

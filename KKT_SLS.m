@@ -21,6 +21,8 @@ classdef KKT_SLS < OCP
         Q_reg;
         R_reg;
 
+        s_soft;
+
         beta_kj;
         bo_j;
         epsilon;
@@ -28,7 +30,9 @@ classdef KKT_SLS < OCP
         mu_current;
         K_current;
         CONV_EPS;
-            MAX_ITER;
+        MAX_ITER;
+
+        m_soft;
 
     end
     
@@ -37,12 +41,16 @@ classdef KKT_SLS < OCP
             obj@OCP(N,Q,R,m,Qf);
             obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.epsilon = 1e-10;
+            obj.s_soft = 1e6;
+            obj.m_soft = m.soften();
+
             obj = obj.initialize_solver_forward('osqp');
 
             obj.Q_reg = 1e-3*eye(m.nx);
             obj.R_reg = 1e-3*eye(m.nu);
                         
             obj.nominal_ubg = [kron(ones(obj.N-1,1), [zeros(m.nx,1); m.d])]; % assume time invariant constraints + move to initialization
+            
             %terminal constraint
             obj.nominal_ubg = [obj.nominal_ubg; zeros(m.nx,1); m.df];
             obj.ubg_current = obj.nominal_ubg;
@@ -53,7 +61,8 @@ classdef KKT_SLS < OCP
         
         function [feasible,ii, time1, time2,delta, K] = solve(obj,x0) %% initial conditions should be given here: after the initialization
 
-            m = obj.m;
+            m = obj.m_soft;
+            m_hard = obj.m;
             N = obj.N;
             ni = m.ni;
 
@@ -70,6 +79,7 @@ classdef KKT_SLS < OCP
             time1 = 0;
             time2 = 0;
             for ii=1:MAX_ITER
+                ii
                 try 
                     tic
                     [obj, ~,x_bar, u_bar, lambda_bar, mu_bar] = obj.forward_solve(x0);
@@ -77,7 +87,7 @@ classdef KKT_SLS < OCP
                     time2 = time2+t;
                 catch e
                     if contains(e.message, 'error_on_fail')
-                        disp('infeasible forward solve -- use soft constraints');
+                        disp('infeasible forward solve');
                         return;
                     else
                         rethrow(e);
@@ -88,9 +98,12 @@ classdef KKT_SLS < OCP
 
                 delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
                 if delta{ii} <= obj.CONV_EPS
-                    disp('converged!');
+                    if full(norm(current_u(m_hard.nu+1:end,:),'inf')) >=1e-5
+                        disp('converged to an infeasible solution')
+                    else
+                        disp('converged to a feasible solution')
+                    end
                     feasible =true;
-                    u_bar
                     return;
                 else
                     current_x = x_bar;
@@ -117,7 +130,14 @@ classdef KKT_SLS < OCP
 
         function obj = initialize_solver_forward(obj,solver)
             import casadi.*
-            m=obj.m;
+            %m=obj.m;
+
+            m = obj.m_soft;
+            
+            R = blkdiag(obj.R, obj.s_soft*eye(m.ni)); % include the soft constraints
+            Q = obj.Q;
+            Qf = obj.Qf;
+
             nx = m.nx;
             nu = m.nu;
             ni = m.ni;
@@ -127,10 +147,6 @@ classdef KKT_SLS < OCP
             B = m.B;
             C = m.C;
             Cf = m.Cf;
-
-            R = obj.R;
-            Q = obj.Q;
-            Qf = obj.Qf;
 
             obj.current_nominal = zeros(N*(nx+nu)+nx,1);
             A_mat = zeros(0,nx);
@@ -188,7 +204,7 @@ classdef KKT_SLS < OCP
 
         function [obj, time, x_bar, u_bar, lambda_bar, mu_bar] = forward_solve(obj,x0)
             import casadi.*
-            m=obj.m;
+            m=obj.m_soft;
             N = obj.N;
             nx = m.nx;
             nu = m.nu;
