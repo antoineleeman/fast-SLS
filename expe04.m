@@ -28,6 +28,8 @@ N=25;
 kkt = KKT_SLS(N,Q,R,msd,Qf);
 it_kkt = [];
 
+
+
 for ii =1:n_sample
     ii
     x0 =4*rand(msd.nx,1)-2;

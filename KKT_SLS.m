@@ -69,10 +69,9 @@ classdef KKT_SLS < OCP
 
         end
         
-        function [feasible,ii, time1, time2,delta, K] = solve(obj,x0) 
+        function [feasible,ii, time1, time2,delta, V0] = solve(obj,x0) 
 
-            m = obj.m_soft;
-            m_hard = obj.m;
+            m = obj.m;
             N = obj.N;
             ni = m.ni;
 
@@ -88,6 +87,8 @@ classdef KKT_SLS < OCP
             obj.beta_kj = obj.epsilon.*ones(N-1,N-1,ni);
             time1 = 0;
             time2 = 0;
+
+            V0 = nan(m.nu,1);
             for ii=1:MAX_ITER
                 try 
                     tic
@@ -107,12 +108,9 @@ classdef KKT_SLS < OCP
 
                 delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
                 if delta{ii} <= obj.CONV_EPS
-                    if full(norm(current_u(m_hard.nu+1:end,:),'inf')) >=1e-5
-                        disp('converged to an infeasible solution')
-                    else
-                        disp('converged to a feasible solution')
-                    end
+                    disp('converged to a feasible solution');
                     feasible =true;
+                    V0 = current_u(:,1);
                     return;
                 else
                     current_x = x_bar;

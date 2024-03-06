@@ -33,12 +33,11 @@ classdef YALMIP_SLS < OCP
 
         end
         
-        function [feasible] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+        function [feasible, V0] = solve(obj,x0) %% initial conditions should be given here: after the initialization
             [ V0, errorcode] = obj.yalmip_solve(x0);
             if errorcode == 0
                 feasible = true;
-                V0
-                disp('optimal solution found')
+                disp('optimal solution found');
             else
                 % Solver reports an infeasible solution or an error
                 feasible = false;
@@ -137,22 +136,7 @@ classdef YALMIP_SLS < OCP
             %     end
             %     constraints = [constraints, LHS <= b];
             % end
-            
-            % input constraint
-            % Fu = m.F_u;
-            % bu = m.b_u;
-            % nFu = length(bu);
-            % for ii = 1:N
-            %     for jj = 1: nFu
-            %         f = Fu(jj,:); b = bu(jj);
-            %         LHS = f*V(:,ii);
-            %         for kk = 1:ii-1
-            %             LHS = LHS + norm(f*Phi_u((ii-1)*nu+1:ii*nu,kk*nx+1:(kk+1)*nx),2);
-            %         end
-            %         constraints = [constraints, LHS <= b];
-            %     end
-            % end
-            
+       
             options = sdpsettings('verbose',1,'solver',solver);
             %options = sdpsettings('verbose',1);
 

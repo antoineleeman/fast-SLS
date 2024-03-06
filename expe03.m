@@ -25,14 +25,16 @@ Qf = Q;
 n_sample = 1000;
 N=25;
 
-kkt = KKT_SLS(N,Q,R,msd,Qf);
+solver_kkt = KKT_SLS(N,Q,R,msd,Qf);
+solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek');
+
 it_kkt = [];
 
 for ii =1:n_sample
     ii
     x0 =4*rand(msd.nx,1)-2;
     tic
-    [feasible,it] = kkt.solve(x0);
+    [feasible,it] = solver_kkt.solve(x0);
     time =toc;
     if feasible
         [it_kkt] = [it_kkt;it];
