@@ -34,11 +34,8 @@ faulty_implementation = false;
 for ii =1:n_sample
     ii
     x0 =2*rand(msd.nx,1)-1;
-    tic
     [~,~,~,~,~,V0_kkt] = kkt.solve(x0);
     [~,V0_mosek] = solver_yalmip.solve(x0);
-    time =toc;
-        norm(full(V0_kkt) - V0_mosek,'inf')
 
     if norm(full(V0_kkt) - V0_mosek,'inf')>= 1e-4
         norm(full(V0_kkt) - V0_mosek,'inf')

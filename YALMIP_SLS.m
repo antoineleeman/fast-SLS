@@ -66,9 +66,9 @@ classdef YALMIP_SLS < OCP
                 objective = objective + Z(:,k)'*obj.Q*Z(:,k) + V(:,k)'*obj.R*V(:,k);
             end
             
+            % Add regulizer to the objective
             objective = objective + norm([kron(eye(N+1),obj.Q_reg)* Phi_x;kron(eye(N+1),obj.R_reg)* Phi_u],'fro')^2;
-            %objective = objective + norm([Phi_x;Phi_u],'fro')^2; %% change regulizer
-
+            
             % Initialise the constraints
             constraints = X0 == Z(:,1);
             
