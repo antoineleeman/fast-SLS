@@ -94,6 +94,7 @@ xticks([10^1 70]);
 set(gca,'FontSize',12);
 set(gcf,'units','centimeters','Position', [0 0 16.1*2 10]);
 exportgraphics(gcf,strcat('img/fig4.pdf'),'ContentType','vector');
+saveas(gcf, 'fig4.png');
 %%
 clear all
 close all
