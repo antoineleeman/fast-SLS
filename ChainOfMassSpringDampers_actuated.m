@@ -82,7 +82,6 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
 
             %acutation on last mass
             obj.nu=1;
-            %B_c=1/m*[zeros(nx-nxx,1);0;1;];
             B_c=1/m*[kron(eye(M),[0;1])];
             [obj.A,obj.B]=c2d(A_c,B_c,obj.dt);
             obj.nx = nx;

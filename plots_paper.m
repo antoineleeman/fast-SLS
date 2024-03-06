@@ -17,7 +17,7 @@ clear all;
 close all;
 clf;
 load('data/gurobi-sls-N.mat')
-load('data/fast-sls-N.mat') % use this: 05-Dec-2023_14_17_22__timings_N_exact_kkt
+load('data/fast-sls-N.mat')
 load('data/mosek-sls-N.mat')
 
 clf;

@@ -27,7 +27,7 @@ classdef (Abstract) LinearSystem < DynamicalSystem
 
     methods
         % Constructor
-        function obj = LinearSystem(A,B,C,E,dt) % initialization of terminal constraint?
+        function obj = LinearSystem(A,B,C,E,dt)
             if nargin > 0
                 obj.A = A;
                 obj.B = B;
@@ -43,22 +43,6 @@ classdef (Abstract) LinearSystem < DynamicalSystem
 
         function x_p = ddyn(obj,x,u)
             x_p = obj.A*x+obj.B*u;
-        end
-
-
-        %return the same object with soft constraint
-        % todo: change the cost!
-        function obj = soften(obj)
-            C_soft = [obj.C, -eye(obj.ni)];
-            B_soft = [obj.B, zeros(obj.nx, obj.ni)];
-            
-            obj.C = C_soft;
-            obj.B = B_soft;
-                
-            [obj.nx, obj.nu] = size(B_soft);
-            [obj.ni,~] = size(C_soft);
-
-
         end
     end
 

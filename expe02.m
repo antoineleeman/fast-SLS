@@ -111,17 +111,8 @@ close all;
 figure(2);
 clf;
 load('timings_M_mosek');
-N
 load('timings_M_gurobi');
-N
 load('timings_M_kkt');
-N
-
-
-%load('yalm_scalability_nx.mat');
-%load('kkt_scalability_nx.mat');
-%load('24-Nov-2023_16_30_08__timings_M_yal.mat');
-%load('24-Nov-2023_16_32_27__timings_M_kkt.mat');
 
 colors = [0.0504    0.0298    0.5280
     0.4934    0.0115    0.6580
@@ -129,23 +120,15 @@ colors = [0.0504    0.0298    0.5280
     0.9722    0.5817    0.2541
     0.9400    0.9752    0.1313];
 
-
 errorbar(timings_M_kkt(1,:), timings_M_kkt(2,:), timings_M_kkt(3,:),'LineWidth',2,'Color', colors(1,:));
 hold on;
 plot(timings_M_gurobi(1,:), timings_M_gurobi(2,:),'LineWidth',2,'Color', colors(3,:),'Marker','+');
 plot(timings_M_mosek(1,:), timings_M_mosek(2,:),'LineWidth',2,'Color', colors(4,:),'Marker','+');
-
-% First plot with DisplayName for legend
 plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/500000, 'LineWidth', 2, 'Linestyle',':', 'DisplayName', '$\mathcal{O}(n_x^3)$', 'Color', [.5 .5 .5]);
-
-% Second plot without legend entry
 h = plot(timings_M_mosek(1,:), timings_M_mosek(1,:).^3/50, 'LineWidth', 2, 'Linestyle',':', 'Color', [.5 .5 .5]);
 set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
-
-% Second plot without legend entry
 h = plot(timings_M_gurobi(1,:), timings_M_gurobi(1,:).^3/10, 'LineWidth',2,'Linestyle',':',  'Color', [.5 .5 .5]);
 set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
-
 
 set(gca, 'YScale', 'log')
 set(gca, 'XScale', 'log')
@@ -153,13 +136,6 @@ legend('fast-SLS','gurobi','mosek','$\mathcal{O}(n_x^3)$','interpreter','latex')
 xlabel('Number of states $n_x$','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');
 grid on;
-% nx_min = [min([timings_M_gurobi(1,:),timings_M_kkt(1,:)])];
-% nx_max = [max([timings_M_gurobi(1,:),timings_M_kkt(1,:)])];
-% cpu_min = [min([timings_M_gurobi(2,:),timings_M_kkt(2,:)])];
-% cpu_max = [max([timings_M_gurobi(2,:),timings_M_kkt(2,:)])];
-% axis([nx_min, nx_max, cpu_min/2, cpu_max*2])
-%axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+50, 0.005, 150])
-
 
 set(gca,'FontSize',10);
 set(gcf,'units','centimeters','Position', [0 0 15 10]);

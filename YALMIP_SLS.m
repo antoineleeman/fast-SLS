@@ -136,8 +136,6 @@ classdef YALMIP_SLS < OCP
             % end
        
             options = sdpsettings('verbose',1,'solver',solver);
-            %options = sdpsettings('verbose',1);
-
             obj.yalmip_solve = optimizer(constraints,objective,options,[X0],V(:,1));
 
         end
