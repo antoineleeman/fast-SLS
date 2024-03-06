@@ -13,16 +13,12 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-%%
 clear all;
 close all;
 clc;
 
-%N = 15;
-%n_sample = 1;
-
 %%
-expe01_init
+init
 timings_M_kkt = [];
 timings_M_kkt_ff = [];
 
@@ -56,7 +52,7 @@ save('timings_M_kkt.mat','timings_M_kkt','timings_M_kkt_ff','msd','N','n_sample'
 
 
 %%
-expe01_init
+init
 n_sample = 3;
 timings_M_gurobi = [];
 for mm = 3:1:7
@@ -84,7 +80,7 @@ save('timings_M_gurobi.mat','timings_M_gurobi','msd','N','n_sample');
 
 
 %%
-expe01_init
+init
 timings_M_mosek = [];
 n_sample = 3;
 for mm = 3:1:7

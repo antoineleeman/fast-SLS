@@ -17,7 +17,7 @@ clear all;
 close all;
 clc;
 %%
-expe01_init
+init
 timings_N_exact_kkt = [];
 timings_N_exact_ff = [];
 
@@ -44,7 +44,7 @@ save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','timings_N_exact
 save('fast-sls-N.mat','timings_N_exact_kkt','timings_N_exact_ff','msd');
 
 %%
-expe01_init;
+init;
 n_sample = 3;
 timings_N_gurobi = [];
 for nn=3:1:10
@@ -69,7 +69,7 @@ save(getUniqueName('timings_N_gurobi'),'timings_N_gurobi','msd')
 save('gurobi-sls-N.mat','timings_N_gurobi','msd')
 
 %%
-expe01_init
+init
 timings_N_mosek = [];
 n_sample = 3;
 for nn=3:2:15
