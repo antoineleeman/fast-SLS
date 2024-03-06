@@ -36,38 +36,12 @@ for nn=3:10:120
             IT = [IT,it];
         end
     end
-
     timings_N_exact_kkt = [timings_N_exact_kkt,[nn; mean(timing_kkt);std(timing_kkt)]];
     timings_N_exact_ff = [timings_N_exact_ff,[nn; mean(timing_ricc);std(timing_ricc)]];
-
 end
-histogram(IT)
-
 
 save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','timings_N_exact_ff','msd')
 save('fast-sls-N.mat','timings_N_exact_kkt','timings_N_exact_ff','msd');
-%%
-expe01_init
-timings_N_rti_kkt = [];
-
-for nn=3:30:120
-    nn
-    kkt = RTI_fast_SLS(nn,Q,R,msd,Qf);
-    timing_kkt_rti = [];
-
-    for ii =1:n_sample
-        x0 =rand(msd.nx,1);
-        tic
-            [feasible] = kkt.solve(x0);
-        time =toc;
-        [timing_kkt_rti] = [timing_kkt_rti;time];
-    end
-    timings_N_rti_kkt = [timings_N_rti_kkt,[nn; mean(timing_kkt_rti);std(timing_kkt_rti)]];
-end
-
-save(getUniqueName('timings_N_rti_kkt'),'timings_N_rti_kkt','msd')
-save('rti-fast-sls-N.mat','timings_N_rti_kkt','msd')
-
 
 %%
 expe01_init;
@@ -118,29 +92,3 @@ for nn=3:2:15
 end
 save(getUniqueName('timings_N_mosek'),'timings_N_mosek','msd')
 save('mosek-sls-N.mat','timings_N_mosek','msd')
-
-%%
-expe01_init
-timings_N_nominal = [];
-
-for nn=3:15:150
-    nn
-    kkt = KKT_SLS(nn,Q,R,msd,Qf);
-    timing_nom = [];
-
-    for ii =1:n_sample
-        x0 =rand(msd.nx,1);
-        [~, time] = kkt.forward_solve(x0);
-        [timing_nom] = [timing_nom;time];
-    end
-    %     end
-    % end
-    timings_N_nominal = [timings_N_nominal,[nn; mean(timing_nom);std(timing_nom)]];
-    
-end
-save(getUniqueName('timings_N_nominal'),'timings_N_nominal','msd');
-save('nominal-N.mat','timings_N_nominal','msd');
-
-
-
-%%
