@@ -2,3 +2,4 @@
 *.asv
 *.mlx
 playground.mlx
+.DS_Store
