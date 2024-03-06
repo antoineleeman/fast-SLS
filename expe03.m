@@ -25,8 +25,6 @@ Qf = Q;
 n_sample = 1000;
 N=25;
 
-
-
 kkt = KKT_SLS(N,Q,R,msd,Qf);
 it_kkt = [];
 
