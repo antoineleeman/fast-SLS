@@ -1,4 +1,4 @@
-% File: main.m
+% File: expe00.m
 % Author: Antoine Leeman (aleeman@ethz.ch)
 % Date: 06th March 2024
 % License: MIT
@@ -30,7 +30,7 @@ timings_N = [];
 N = 15;
 %
 
-kkt = KKT_SLS(N,Q,R,m,Qf); %% check if the bo are well reset
+kkt = KKT_SLS(N,Q,R,m,Qf); 
 IT = [];
 for ii = 1:length(x1_range)
     for jj = 1:length(x2_range)
@@ -53,7 +53,7 @@ x2_range = linspace(-5,5,grid_density);
 timings_N = [];
 %
 profile on
-kkt = KKT_SLS(15,Q,R,m,Qf); %% check if the bo are well reset
+kkt = KKT_SLS(15,Q,R,m,Qf);
 IT = [];
 for ii = 1:length(x1_range)
     for jj = 1:length(x2_range)
