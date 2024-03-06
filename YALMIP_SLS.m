@@ -39,7 +39,6 @@ classdef YALMIP_SLS < OCP
             end
         end
 
-
         function obj = initialize_solve(obj,solver)
                         
             m = obj.m;
@@ -99,7 +98,7 @@ classdef YALMIP_SLS < OCP
                 constraints = [ constraints, Z(:,k+1)==A*Z(:,k)+B*V(:,k)];
             end
             
-            % % state+input constraints
+            % Add state and input constraints
             C = m.C;
             d = m.d;
             nFx = length(d);

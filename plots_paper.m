@@ -55,7 +55,6 @@ ylabel('Computation time [s]','interpreter','latex');
 grid on;
 axis([timings_N_exact_kkt(1,1), timings_N_exact_kkt(1,end)+10, 0.001, 100])
 
-
 load('data/timings_M_mosek');
 load('data/timings_M_gurobi');
 load('data/timings_M_kkt');

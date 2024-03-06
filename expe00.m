@@ -28,7 +28,6 @@ x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
 N = 15;
-%
 
 kkt = KKT_SLS(N,Q,R,m,Qf); 
 IT = [];

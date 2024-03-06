@@ -44,3 +44,4 @@ disp('percentage solved');
 length(it_kkt)/n_sample
 
 save(getUniqueName('it_kkt'),'it_kkt','msd');
+save('it_kkt.mat','it_kkt','msd');
