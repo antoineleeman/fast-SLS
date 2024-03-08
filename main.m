@@ -17,13 +17,15 @@ addpath('util');
 
 gurobi_installed = true;
 mosek_installed = true;
+% gurobi and mosek may fail to solve the largest instanciations of the
+% problem below depending on the computer used
 
 %% Casadi required for this section ! %
 expe00_fast_SLS % simulation with double integrator
 expe03_fast_SLS % evaluation of the number of iteration required before convergence
 
 %% solvers comparison for increasing horizon length
-expe01_horizon_fast_SLS
+expe01_horizon_fast_SLS %casadi required!
 if gurobi_installed 
     expe01_horizon_gurobi 
 end
@@ -32,7 +34,7 @@ if mosek_installed
 end
 
 %% solvers comparison for increasing state dimension
-expe02_state_fast_SLS
+expe02_state_fast_SLS %casadi required!
 if gurobi_installed
     expe02_state_gurobi
 end
