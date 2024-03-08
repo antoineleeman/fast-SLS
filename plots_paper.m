@@ -96,11 +96,11 @@ set(gcf,'units','centimeters','Position', [0 0 16.1*2 10]);
 exportgraphics(gcf,strcat('img/fig4.pdf'),'ContentType','vector');
 saveas(gcf, 'fig4.png');
 %%
-clear all
-close all
-clf
+clear all;
+figure(2);
 
-load('data/06-Dec-2023_17_34_03__it_kkt.mat');
+
+load('data/it_kkt.mat');
 colors = [0.0504    0.0298    0.5280
     0.4934    0.0115    0.6580
     0.7964    0.2780    0.4713

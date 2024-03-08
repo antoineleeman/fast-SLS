@@ -269,7 +269,7 @@ classdef KKT_SLS < OCP
                 end
             end
 
-            bo_j = squeeze(sum(beta_kj,2))'; % remark: this operation scales with N^2 !
+            bo_j = squeeze(sum(beta_kj,2))'; % remark: this operation scales with N^2 s!
             obj.beta_kj = beta_kj;
             obj.bo_j = bo_j;
 

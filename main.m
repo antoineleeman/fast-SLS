@@ -13,10 +13,42 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-expe00 % simulation with double integrator
-expe01 % solvers comparison for increasing horizon length
-expe02 % solvers comparison for increasing state dimension
-expe03 % evaluation of the number of iteration required before convergence
-expe04 % sanity check: all solvers should return the same optimal solution
+addpath('util');
 
+gurobi_installed = true;
+mosek_installed = true;
+
+%% Casadi required for this section ! %
+expe00_fast_SLS % simulation with double integrator
+expe03_fast_SLS % evaluation of the number of iteration required before convergence
+
+%% solvers comparison for increasing horizon length
+expe01_horizon_fast_SLS
+if gurobi_installed 
+    expe01_horizon_gurobi 
+end
+if mosek_installed
+    expe01_horizon_mosek
+end
+
+%% solvers comparison for increasing state dimension
+expe02_state_fast_SLS
+if gurobi_installed
+    expe02_state_gurobi
+end
+if mosek_installed
+    expe02_state_mosek
+end
+if mosek_installed
+    expe04 % sanity check: all solvers should return the same optimal solution
+end
+
+%% Plot all the results
+
+if ~mosek_installed
+    disp('Warning: As Mosek is not installed, the related data have not been updated in the plots');
+end
+if ~gurobi_installed
+    disp('Warning: As Mosek is not installed, the related data have not been updated in the plots');
+end
 plots_paper % plots as in the paper

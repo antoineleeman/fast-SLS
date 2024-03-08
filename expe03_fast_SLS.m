@@ -1,4 +1,4 @@
-% File: expe03.m
+% File: expe03_fast_SLS.m
 % Author: Antoine Leeman (aleeman@ethz.ch)
 % Date: 06th March 2024
 % License: MIT
@@ -13,10 +13,6 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-clear all;
-close all;
-clc;
-
 L = 25;
 msd = ChainOfMassSpringDampers_actuated(L);
 Q = 3*eye(msd.nx);
@@ -26,8 +22,6 @@ n_sample = 1000;
 N=25;
 
 solver_kkt = KKT_SLS(N,Q,R,msd,Qf);
-solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek');
-
 it_kkt = [];
 
 for ii =1:n_sample

@@ -13,10 +13,6 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-clear all;
-close all;
-clc;
-%
 L = 10;
 msd = ChainOfMassSpringDampers_actuated(L);
 Q = 3*eye(msd.nx);

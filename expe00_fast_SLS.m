@@ -1,4 +1,4 @@
-% File: expe00.m
+% File: expe00_fast_SLS.m
 % Author: Antoine Leeman (aleeman@ethz.ch)
 % Date: 06th March 2024
 % License: MIT
@@ -12,12 +12,7 @@
 %}
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
-
-
-clear all;
-close all;
-clc;
-%
+%%
 m = Integrator();
 Q = eye(m.nx);
 R = eye(m.nu);
@@ -51,7 +46,6 @@ x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
 %
-profile on
 kkt = KKT_SLS(15,Q,R,m,Qf);
 IT = [];
 for ii = 1:length(x1_range)
