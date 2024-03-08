@@ -39,8 +39,10 @@ end
 if mosek_installed
     expe02_state_mosek
 end
+
+%% sanity check: all solvers should return the same optimal solution
 if mosek_installed
-    expe04 % sanity check: all solvers should return the same optimal solution
+    expe04
 end
 
 %% Plot all the results
