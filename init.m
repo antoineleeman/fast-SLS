@@ -1,4 +1,4 @@
-% File: expe01_init.m
+% File: init.m
 % Author: Antoine Leeman (aleeman@ethz.ch)
 % Date: 06th March 2024
 % License: MIT
@@ -13,9 +13,6 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-clear all;
-close all;
-clc;
 
 L = 10;
 msd = ChainOfMassSpringDampers_actuated(L);
