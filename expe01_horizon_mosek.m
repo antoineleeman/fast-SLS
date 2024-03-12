@@ -1,5 +1,5 @@
 % File: expe01_horizon_mosek.m
-% Author: Antoine Leeman (aleeman@ethz.ch)
+% Author: Antoine Leeman (aleeman(at)ethz(dot)ch)
 % Date: 06th March 2024
 % License: MIT
 % Reference:
