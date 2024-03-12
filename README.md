@@ -25,16 +25,14 @@ Only for performance comparison:
 - Install [Yalmip](https://yalmip.github.io/tutorial/installation/)
 - Download MOSEK, (request a license), and add it to your matlab path
 
-        ```matlab
           addpath('C:/Users/Documents/mosek/10.3/toolbox/r2022b/mosekopt.mexmaca64'); % Adjust this path to your MOSEK installation
           savepath; % Save the updated path for future MATLAB sessions
-          ```
+
 - Downlaod Gurobi, (request a license), and add it to your matlab path
 
-          ```matlab
           addpath('C:/Users/gurobi/macos_universal2/'); % Adjust this path to your Gurobi installation
           savepath; % Save the updated path for future MATLAB sessions
-          ```
+
 4. Clone this repository or download the code as a ZIP archive and extract it to a folder of your choice.
 
 5. Add the code folder to your MATLAB path by running the following command in the MATLAB Command Window:
