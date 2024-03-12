@@ -14,7 +14,7 @@ The paper is freely available on [arXiv](https://arxiv.org/abs/2401.13762)
 Only for performance comparison:
 - Yalmip (tested with Version 22-June-2023)
 - Mosek (tested with Version 10.3)
-- Gurobi (tested with Version 1003)
+- Gurobi (tested with Version 10.0.3)
 
 ## Installation
 1. Download and install MATLAB from the [official website](https://www.mathworks.com/products/matlab.html).
@@ -24,11 +24,13 @@ Only for performance comparison:
 3. (optionnal) If you want to run the comparisons
 - Install [Yalmip](https://yalmip.github.io/tutorial/installation/)
 - Download MOSEK, (request a license), and add it to your matlab path
+
         ```matlab
           addpath('C:/Users/Documents/mosek/10.3/toolbox/r2022b/mosekopt.mexmaca64'); % Adjust this path to your MOSEK installation
           savepath; % Save the updated path for future MATLAB sessions
           ```
 - Downlaod Gurobi, (request a license), and add it to your matlab path
+
           ```matlab
           addpath('C:/Users/gurobi/macos_universal2/'); % Adjust this path to your Gurobi installation
           savepath; % Save the updated path for future MATLAB sessions
