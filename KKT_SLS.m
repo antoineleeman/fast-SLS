@@ -99,7 +99,7 @@ classdef KKT_SLS < OCP
 
                 delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
                 if delta{ii} <= obj.CONV_EPS
-                    disp('converged to a feasible solution');
+                    disp('converged to an optimal solution');
                     feasible =true;
                     V0 = current_u(:,1);
                     return;
