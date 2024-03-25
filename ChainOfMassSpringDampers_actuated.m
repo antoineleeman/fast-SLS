@@ -16,7 +16,7 @@
 classdef ChainOfMassSpringDampers_actuated < LinearSystem
 
     properties
-        M;
+        M; %number of mass
         mass;
         k_constant;
         d_constant;
@@ -56,9 +56,6 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
         function obj = initialization(obj,M)
 
             nxx=2;%number of local states
-            if M<3
-               error('not programmed') 
-            end
             nx=nxx*M;%number of overall states
 
             m=obj.mass;
@@ -68,20 +65,27 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
             %define cont.-time system matrices \dot{x}=A_c*x+B_c*u
             A_c=zeros(nx);
 
-            %i=1:also contected to ground
-            A_c(1,:)=[0,1,zeros(1,nx-nxx)];
-            A_c(2,:)=1/m*[-k-k,-d-d,k,d,zeros(1,nx-2*nxx)];
-            %1<i<M
-            for i=2:M-1
-                A_c((i-1)*nxx+1,:)=[zeros(1,(i-1)*nxx+1),1,zeros(1,nx-i*nxx)];
-                A_c(i*nxx,:)=1/m*[zeros(1,nxx*(i-2)),k,d,-2*k,-2*d,k,d,zeros(1,nx-nxx*(i+1))];
+            if M ==1
+                A_c = [0, 1; -k/m, -b/m];
+            elseif M==2 %double-check!!
+                A_c = [ 0,1, 0,0;
+                        -2*k/m, -2*d/m, k/m, d/m;
+                        0,0,0,1;
+                        k/m, d/m, -k/m, -d/m];
+            else %M>2
+                %i=1:also connected to ground
+                A_c(1,:)=[0,1,zeros(1,nx-nxx)];
+                A_c(2,:)=1/m*[-k-k,-d-d,k,d,zeros(1,nx-2*nxx)];
+                for i=2:M-1
+                    A_c((i-1)*nxx+1,:)=[zeros(1,(i-1)*nxx+1),1,zeros(1,nx-i*nxx)];
+                    A_c(i*nxx,:)=1/m*[zeros(1,nxx*(i-2)),k,d,-2*k,-2*d,k,d,zeros(1,nx-nxx*(i+1))];
+                end
+                A_c(M*nxx-1,:)=[zeros(1,M*nxx-1),1];
+                A_c(M*nxx,:)=1/m*[zeros(1,nx-2*nxx),k,d,-k,-d]; 
             end
-            %i=M, measured output
-            A_c(M*nxx-1,:)=[zeros(1,M*nxx-1),1];
-            A_c(M*nxx,:)=1/m*[zeros(1,nx-2*nxx),k,d,-k,-d]; 
 
-            %acutation on last mass
-            obj.nu=1;
+
+            %actuation on each mass
             B_c=1/m*[kron(eye(M),[0;1])];
             [obj.A,obj.B]=c2d(A_c,B_c,obj.dt);
             obj.nx = nx;

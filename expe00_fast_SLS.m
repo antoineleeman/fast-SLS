@@ -22,9 +22,10 @@ grid_density = 10;
 x1_range = linspace(-5,5,grid_density);
 x2_range = linspace(-5,5,grid_density);
 timings_N = [];
-N = 15;
+N = 1;
 
-kkt = KKT_SLS(N,Q,R,m,Qf); 
+kkt = KKT_SLS(N,Q,R,m,Qf);
+gurobi = YALMIP_SLS(N,Q,R,m,Qf,'gurobi');
 IT = [];
 for ii = 1:length(x1_range)
     for jj = 1:length(x2_range)
@@ -35,6 +36,8 @@ for ii = 1:length(x1_range)
         end
     end
 end
+
+
 %%
 m = Integrator();
 Q = eye(m.nx);
