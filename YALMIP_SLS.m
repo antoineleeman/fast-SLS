@@ -66,7 +66,7 @@ classdef YALMIP_SLS < OCP
                 objective = objective + Z(:,k)'*obj.Q*Z(:,k) + V(:,k)'*obj.R*V(:,k);
             end
             
-            % Add regulizer to the objective
+            % Add reguralizer to the objective
             objective = objective + norm([kron(eye(N+1),obj.Q_reg)* Phi_x;kron(eye(N+1),obj.R_reg)* Phi_u],'fro')^2;
             
             % Initialise the constraints
@@ -128,7 +128,7 @@ classdef YALMIP_SLS < OCP
             %     constraints = [constraints, LHS <= b];
             % end
        
-            options = sdpsettings('verbose',1,'solver',solver);
+            options = sdpsettings('verbose',0,'solver',solver);
             obj.yalmip_solve = optimizer(constraints,objective,options,[X0],V(:,1));
 
         end
