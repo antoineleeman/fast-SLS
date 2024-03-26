@@ -95,7 +95,8 @@ classdef KKT_SLS < OCP
                 end
                 it_x{ii} = x_bar;
                 it_u{ii} = u_bar;
-
+                
+                %todo
                 delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
                 if delta{ii} <= obj.CONV_EPS
                     disp('converged to an optimal solution');
@@ -279,54 +280,54 @@ classdef KKT_SLS < OCP
             obj.ubg_current = update_ubg;
 
         end
-
-        %% TRY THIS ONE:
-        function [obj, bo_j] = update_backoff(obj)
-            % Extract commonly used values from object and struct `m`
-            m = obj.m;
-            N = obj.N;
-            nx = m.nx;
-            ni = m.ni;
-            C = m.C;
-            A = m.A;
-            B = m.B;
-            E = m.E;
-            
-            % Preallocation
-            Phi_x_kj = cell(N, 1); % Only need to store a column since it's triangular
-            Phi_u_kj = cell(N-1, 1); % Adjusted size
-            beta_kj = zeros(N-1, N-1, ni);
-            
-            % Initial conditions
-            Phi_x_kj{1} = E; % Assuming E doesn't change, no need for N x N cell array
-            
-            for jj = 1:N-1
-                % Calculate controller influence once for each jj
-                K_current_jj = obj.K_current{jj,jj};
-                for kk = jj:N-1
-                    if kk > jj
-                        % Sequentially update Phi_x_kj
-                        A_cl = A + B*obj.K_current{kk,jj};
-                        Phi_x_kj{kk+1} = A_cl*Phi_x_kj{kk};
-                    end
-                    Phi_u_kj{kk} = K_current_jj*Phi_x_kj{kk};
-                    combined_Phi = [Phi_x_kj{kk}; Phi_u_kj{kk}];
-                    beta_kj(kk, jj, :) = vecnorm(C*full(combined_Phi), 2, 2);
-                end
-            end
-            
-            % Sum over second dimension and squeeze to remove singleton dimensions
-            bo_j = squeeze(sum(beta_kj, 2))';
-            
-            % Update object properties
-            obj.beta_kj = beta_kj;
-            obj.bo_j = bo_j;
-            
-            % Prepare for update_ubg
-            bo_0j = zeros(ni, 1); % Preallocated, no changes needed here
-            update_ubg = reshape([zeros(nx, N); m.d - [bo_0j, bo_j]], [(N)*(ni+nx), 1]);
-            obj.ubg_current = update_ubg;
-        end
+        % 
+        % %% TRY THIS ONE:
+        % function [obj, bo_j] = update_backoff(obj)
+        %     % Extract commonly used values from object and struct `m`
+        %     m = obj.m;
+        %     N = obj.N;
+        %     nx = m.nx;
+        %     ni = m.ni;
+        %     C = m.C;
+        %     A = m.A;
+        %     B = m.B;
+        %     E = m.E;
+        % 
+        %     % Preallocation
+        %     Phi_x_kj = cell(N, 1); % Only need to store a column since it's triangular
+        %     Phi_u_kj = cell(N-1, 1); % Adjusted size
+        %     beta_kj = zeros(N-1, N-1, ni);
+        % 
+        %     % Initial conditions
+        %     Phi_x_kj{1} = E; % Assuming E doesn't change, no need for N x N cell array
+        % 
+        %     for jj = 1:N-1
+        %         % Calculate controller influence once for each jj
+        %         K_current_jj = obj.K_current{jj,jj};
+        %         for kk = jj:N-1
+        %             if kk > jj
+        %                 % Sequentially update Phi_x_kj
+        %                 A_cl = A + B*obj.K_current{kk,jj};
+        %                 Phi_x_kj{kk+1} = A_cl*Phi_x_kj{kk};
+        %             end
+        %             Phi_u_kj{kk} = K_current_jj*Phi_x_kj{kk};
+        %             combined_Phi = [Phi_x_kj{kk}; Phi_u_kj{kk}];
+        %             beta_kj(kk, jj, :) = vecnorm(C*full(combined_Phi), 2, 2);
+        %         end
+        %     end
+        % 
+        %     % Sum over second dimension and squeeze to remove singleton dimensions
+        %     bo_j = squeeze(sum(beta_kj, 2))';
+        % 
+        %     % Update object properties
+        %     obj.beta_kj = beta_kj;
+        %     obj.bo_j = bo_j;
+        % 
+        %     % Prepare for update_ubg
+        %     bo_0j = zeros(ni, 1); % Preallocated, no changes needed here
+        %     update_ubg = reshape([zeros(nx, N); m.d - [bo_0j, bo_j]], [(N)*(ni+nx), 1]);
+        %     obj.ubg_current = update_ubg;
+        % end
 
         function obj = update_cost_tube(obj)
             N = obj.N;
