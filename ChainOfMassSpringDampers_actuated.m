@@ -66,7 +66,7 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
             A_c=zeros(nx);
 
             if M ==1
-                A_c = [0, 1; -k/m, -b/m];
+                A_c = [0, 1; -k/m, -d/m];
             elseif M==2
                 A_c = [ 0,1, 0,0;
                         -2*k/m, -2*d/m, k/m, d/m;
