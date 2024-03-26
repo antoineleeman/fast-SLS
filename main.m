@@ -55,4 +55,5 @@ end
 if ~gurobi_installed
     disp('Warning: As Gurobi is not installed, the related data have not been updated in the plots');
 end
+
 plots_paper % plots as in the paper

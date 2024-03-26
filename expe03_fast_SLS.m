@@ -20,7 +20,7 @@ R = eye(msd.nu);
 Qf = Q;
 n_sample = 1000;
 N = 25;
-X0 =2.5*rand(msd.nx,n_sample)-1.25;
+X0 =2*rand(msd.nx,n_sample)-1;
 
 solver_kkt = KKT_SLS(N,Q,R,msd,Qf);
 it_kkt = [];
