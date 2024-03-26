@@ -35,4 +35,4 @@ for nn=1:2:15
     timings_N_mosek = [timings_N_mosek,[nn; mean(timing_yal);std(timing_yal)]];
 end
 save(getUniqueName('timings_N_mosek'),'timings_N_mosek','msd')
-save('mosek-sls-N.mat','timings_N_mosek','msd')
+save('data/mosek-sls-N.mat','timings_N_mosek','msd')

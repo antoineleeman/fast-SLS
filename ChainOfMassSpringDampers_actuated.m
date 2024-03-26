@@ -33,7 +33,7 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
 
             obj.nw = obj.nx;
            
-            obj.E = 0.3*eye(obj.nw);
+            obj.E = 0.1*eye(obj.nw);
 
             u_max = 4; %% TYPO FROM PAPER!
             x_max = 4;

@@ -20,7 +20,7 @@ R = eye(msd.nu);
 Qf = Q;
 n_sample = 1000;
 N=25;
-X0 =2*rand(msd.nx,n_sample)-1;
+X0 =2.5*rand(msd.nx,n_sample)-1.25;
 
 solver_kkt = KKT_SLS(N,Q,R,msd,Qf);
 it_kkt = [];
@@ -38,5 +38,7 @@ end
 disp('percentage solved');
 length(it_kkt)/n_sample
 
+histogram(it_kkt)
+
 save(getUniqueName('it_kkt'),'it_kkt','msd');
-save('it_kkt.mat','it_kkt','msd');
+save('data/it_kkt.mat','it_kkt','msd');

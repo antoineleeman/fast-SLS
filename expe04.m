@@ -13,13 +13,13 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-L = 10;
+L = 5;
 msd = ChainOfMassSpringDampers_actuated(L);
 Q = 3*eye(msd.nx);
 R = eye(msd.nu);
 Qf = Q;
 n_sample = 5;
-N=10;
+N = 5;
 
 kkt = KKT_SLS(N,Q,R,msd,Qf);
 solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'mosek');
@@ -29,7 +29,8 @@ faulty_implementation = false;
 
 for ii =1:n_sample
     ii
-    x0 =2*rand(msd.nx,1)-1;
+    x0 =rand(msd.nx,1)-0.5;
+
     [~,~,~,~,~,V0_kkt] = kkt.solve(x0);
     [~,V0_mosek] = solver_yalmip.solve(x0);
 
