@@ -25,7 +25,7 @@ for mm = 1:1:7
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'mosek'); 
     timings_mm_yalmip = [];
     for ii=1:n_sample
-        x0 =X0(:,ii);
+        x0 =2*rand(msd.nx,1)-1;
         tic
         feasible = solver_yalmip.solve(x0);
         time =toc;
