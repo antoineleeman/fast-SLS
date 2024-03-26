@@ -19,13 +19,13 @@ timings_N_exact_kkt = [];
 timings_N_exact_ff = [];
 
 IT = [];
-for nn=3:10:120
+for nn=1:10:120
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf);
     timing_kkt = [];
     timing_ricc = [];
     for ii =1:n_sample
-        x0 =4*rand(msd.nx,1)-2;
+        x0 =X0(:,ii);
         [feasible, it, time1,time2] = kkt.solve(x0);
         if feasible
             [timing_kkt] = [timing_kkt;time2+time1];

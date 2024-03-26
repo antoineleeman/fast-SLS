@@ -18,7 +18,7 @@ timings_M_kkt = [];
 timings_M_kkt_ff = [];
 
 IT_M_kkt = [];
-for mm = 3:10:80
+for mm = 1:10:80
     mm
     msd = ChainOfMassSpringDampers_actuated(mm);
     Q = 3*eye(msd.nx);
@@ -29,7 +29,7 @@ for mm = 3:10:80
         timing_ff = [];
 
     for ii=1:n_sample
-        x0 =4*rand(msd.nx,1)-2;
+        x0 =X0(:,ii);
         [feasible,it, time1,time2] = kkt.solve(x0);
         if feasible
             timing_mm_kkt = [timing_mm_kkt;time2+time1];

@@ -21,3 +21,4 @@ R = eye(msd.nu);
 Qf = Q;
 n_sample = 30;
 N=20;
+X0 =2*rand(msd.nx,n_sample)-1;

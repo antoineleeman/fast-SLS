@@ -16,7 +16,7 @@
 init
 n_sample = 3;
 timings_M_gurobi = [];
-for mm = 3:1:7
+for mm = 1:1:7
     mm
     msd = ChainOfMassSpringDampers_actuated(mm);
     Q = 3*eye(msd.nx);
@@ -25,7 +25,7 @@ for mm = 3:1:7
     solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'gurobi'); 
     timings_mm_yalmip = [];
     for ii=1:n_sample
-        x0 =4*rand(msd.nx,1)-2;
+        x0 =X0(:,ii);
         tic
         feasible = solver_yalmip.solve(x0);
         time =toc;
