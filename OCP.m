@@ -48,10 +48,18 @@ classdef OCP
             cost = (x)'*obj.Qf*(x);
         end
     end
-    methods(Static) % todo: implement with square roots!
-        function [K,S] = riccati_step(A,B,Cx,Cu,Sk)
+    methods(Static)
+        function [K,S] = riccati_step(A,B,Cx,Cu,Sk) %todo: include Cxu
             K = -(Cu+B'*Sk*B)\(B'*Sk*A);
             S = Cx + A'*Sk*A + A'*Sk*B*K;
         end
+        function [K,S] = riccati_step_cholesky(A,B,Cx,Cu,Sk)  % this is slower
+            L = chol(Cu + B' * Sk * B, 'lower');
+            M = L \ (B' * Sk * A);
+            K = -(L' \ M);
+            S = Cx + A' * Sk * A + A' * Sk * B * K;
+        end
+
     end
+
 end
