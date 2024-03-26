@@ -19,7 +19,7 @@ classdef (Abstract) DynamicalSystem
     properties
         nx; % number of state variables
         nu; % number of input variables
-        nw; % size of the disturbance
+        nw; % size of the disturbance %todo: implement for n_w < n_x
         ni; % size of the constraints
         ni_x; %number of terminal constraint
         dt; % time step
