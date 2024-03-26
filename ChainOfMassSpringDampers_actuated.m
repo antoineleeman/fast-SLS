@@ -27,7 +27,7 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
             obj.mass = 1;
             obj.k_constant=10;
             obj.d_constant=2;
-            obj.dt = 0.5;
+            obj.dt = 0.1;
             
             obj = initialization(obj,M);
 
@@ -67,7 +67,7 @@ classdef ChainOfMassSpringDampers_actuated < LinearSystem
 
             if M ==1
                 A_c = [0, 1; -k/m, -b/m];
-            elseif M==2 %double-check!!
+            elseif M==2
                 A_c = [ 0,1, 0,0;
                         -2*k/m, -2*d/m, k/m, d/m;
                         0,0,0,1;
