@@ -27,8 +27,10 @@ classdef YALMIP_SLS < OCP
             obj = obj.initialize_solve(solver);
         end
         
-        function [feasible, V0] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+        function [feasible, V0, time] = solve(obj,x0) %% initial conditions should be given here: after the initialization
+            tic
             [ V0, errorcode] = obj.yalmip_solve(x0);
+            time =toc;
             if errorcode == 0
                 feasible = true;
                 disp('optimal solution found');

@@ -22,9 +22,7 @@ for nn=1:2:15
     timing_yal = [];
     for ii =1:n_sample
         x0 =X0(:,ii);
-        tic
-        feasible = solver_yalmip.solve(x0);
-        time =toc;
+        [feasible, ~, time] = solver_yalmip.solve(x0);
             if feasible
                 timing_yal = [timing_yal;time];
             end

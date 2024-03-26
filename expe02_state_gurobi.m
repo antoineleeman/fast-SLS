@@ -26,9 +26,8 @@ for mm = 1:1:7
     timings_mm_yalmip = [];
     for ii=1:n_sample
         x0 =2*rand(msd.nx,1)-1;
-        tic
-        feasible = solver_yalmip.solve(x0);
-        time =toc;
+        [feasible, ~, time] = solver_yalmip.solve(x0);
+
         if feasible
             timings_mm_yalmip = [timings_mm_yalmip;time];
         end
