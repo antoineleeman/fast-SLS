@@ -28,9 +28,8 @@ classdef YALMIP_SLS < OCP
         end
 
         function [feasible, V0, time] = solve(obj,x0) %% initial conditions should be given here: after the initialization
-            tic
-            [ V0, errorcode] = obj.yalmip_solve(x0);
-            time =toc;
+            [ V0, errorcode, aux, out,~ ,output ] = obj.yalmip_solve(x0);
+            time =output.solvertime;
             if errorcode == 0
                 feasible = true;
                 disp('optimal solution found');
@@ -59,8 +58,8 @@ classdef YALMIP_SLS < OCP
             Phi_u = sdpvar( (N + 1) * nu, (N + 1) * nx, 'full');
 
             % Construct the sigma matrix
-            sigma_seq = kron(eye(N), m.E);
-            Sigma_mat = blkdiag(eye(nx),sigma_seq);
+            sigma_seq = sparse(kron(eye(N), m.E));
+            Sigma_mat = sparse(blkdiag(eye(nx),sigma_seq));
 
             % Define the objective function
             objective = Z(:,N+1)'*obj.Qf*Z(:,N+1);
@@ -130,8 +129,7 @@ classdef YALMIP_SLS < OCP
             %     constraints = [constraints, LHS <= b];
             % end
             if strcmp(solver, 'gurobi')
-                options = sdpsettings('verbose',0,'solver',solver,...
-                    'gurobi.FeasibilityTol', obj.CONV_EPS);
+                options = sdpsettings('verbose',0,'solver',solver);
             elseif strcmp(solver, 'mosek')
                 options = sdpsettings('verbose',0,'solver',solver);
             end
