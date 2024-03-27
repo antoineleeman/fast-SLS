@@ -90,7 +90,7 @@ ylabel('Computation time [s]','interpreter','latex');
 grid on;
 
 axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.005, 150])
-xticks([10^1 70]);
+xticks([1 10^1 70]);
 set(gca,'FontSize',12);
 set(gcf,'units','centimeters','Position', [0 0 16.1*2 10]);
 exportgraphics(gcf,strcat('img/fig4.pdf'),'ContentType','vector');
