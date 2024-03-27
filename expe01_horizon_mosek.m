@@ -16,7 +16,7 @@
 init
 timings_N_mosek = [];
 n_sample = 3;
-for nn=1:2:15
+for nn=1:2:6
     nn
     solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek');
     timing_yal = [];

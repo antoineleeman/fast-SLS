@@ -16,7 +16,7 @@
 init
 timings_M_mosek = [];
 n_sample = 3;
-for mm = 1:1:7
+for mm = 1:1:3
     mm
     msd = ChainOfMassSpringDampers_actuated(mm);
     Q = 3*eye(msd.nx);
@@ -31,7 +31,7 @@ for mm = 1:1:7
             timings_mm_yalmip = [timings_mm_yalmip;time];
         end
     end
-   timings_M_mosek= [timings_M_mosek,[mm; mean(timings_mm_yalmip);std(timings_mm_yalmip)]];
+   timings_M_mosek= [timings_M_mosek,[msd.nx; mean(timings_mm_yalmip);std(timings_mm_yalmip)]];
 end
 
 save(getUniqueName('timings_M_mosek'),'timings_M_mosek','msd','N','n_sample')

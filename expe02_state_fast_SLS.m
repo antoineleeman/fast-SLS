@@ -29,7 +29,7 @@ for mm = 1:10:80
         timing_ff = [];
 
     for ii=1:n_sample
-        x0 =rand(msd.nx,1)-0.5;
+        x0 =2*rand(msd.nx,1)-1;
         [feasible,it, time1,time2] = kkt.solve(x0);
         if feasible
             timing_mm_kkt = [timing_mm_kkt;time2+time1];
@@ -37,8 +37,8 @@ for mm = 1:10:80
             IT_M_kkt = [IT_M_kkt,it];
         end
     end
-    timings_M_kkt = [timings_M_kkt,[mm; mean(timing_mm_kkt);std(timing_mm_kkt)]];
-    timings_M_kkt_ff = [timings_M_kkt_ff,[mm; mean(timing_ff);std(timing_ff)]];
+    timings_M_kkt = [timings_M_kkt,[msd.nx; mean(timing_mm_kkt);std(timing_mm_kkt)]];
+    timings_M_kkt_ff = [timings_M_kkt_ff,[msd.nx; mean(timing_ff);std(timing_ff)]];
 end
 
 save(getUniqueName('timings_M_kkt'),'timings_M_kkt','timings_M_kkt_ff','IT_M_kkt','msd','N','n_sample')

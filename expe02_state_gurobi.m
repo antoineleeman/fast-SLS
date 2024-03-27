@@ -32,7 +32,7 @@ for mm = 1:1:7
             timings_mm_yalmip = [timings_mm_yalmip;time];
         end
     end
-   timings_M_gurobi = [timings_M_gurobi,[mm; mean(timings_mm_yalmip);std(timings_mm_yalmip)]];
+   timings_M_gurobi = [timings_M_gurobi,[msd.nx; mean(timings_mm_yalmip);std(timings_mm_yalmip)]];
 end
 
 save(getUniqueName('timings_M_gurobi'),'timings_M_gurobi','msd','N','n_sample')

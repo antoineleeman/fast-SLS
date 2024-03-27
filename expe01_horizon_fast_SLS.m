@@ -19,7 +19,7 @@ timings_N_exact_kkt = [];
 timings_N_exact_ff = [];
 
 IT = [];
-for nn=1:10:120
+for nn=1:10:50
     nn
     kkt = KKT_SLS(nn,Q,R,msd,Qf);
     timing_kkt = [];
