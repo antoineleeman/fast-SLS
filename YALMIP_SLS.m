@@ -15,18 +15,18 @@
 %%
 classdef YALMIP_SLS < OCP
     %All the KKT related functions for the SLS problem
-    
+
     properties
         yalmip_solve;
         solver;
     end
-    
+
     methods
         function obj = YALMIP_SLS(N,Q,R,m,Qf,solver)
             obj@OCP(N,Q,R,m,Qf);
             obj = obj.initialize_solve(solver);
         end
-        
+
         function [feasible, V0, time] = solve(obj,x0) %% initial conditions should be given here: after the initialization
             tic
             [ V0, errorcode] = obj.yalmip_solve(x0);
@@ -42,7 +42,7 @@ classdef YALMIP_SLS < OCP
         end
 
         function obj = initialize_solve(obj,solver)
-                        
+
             m = obj.m;
             N = obj.N;
             nx = m.nx;
@@ -54,52 +54,52 @@ classdef YALMIP_SLS < OCP
             Z = sdpvar(nx, N + 1, 'full'); % State trajectory variables
             V = sdpvar(nu, N, 'full');     % Input trajectory variables
             X0 = sdpvar(nx, 1, 'full');    % Initial state variable
-            
+
             Phi_x = sdpvar( (N + 1) * nx, (N + 1) * nx, 'full');
             Phi_u = sdpvar( (N + 1) * nu, (N + 1) * nx, 'full');
-            
+
             % Construct the sigma matrix
             sigma_seq = kron(eye(N), m.E);
             Sigma_mat = blkdiag(eye(nx),sigma_seq);
-            
+
             % Define the objective function
             objective = Z(:,N+1)'*obj.Qf*Z(:,N+1);
             for k=1:N
                 objective = objective + Z(:,k)'*obj.Q*Z(:,k) + V(:,k)'*obj.R*V(:,k);
             end
-            
+
             % Add reguralizer to the objective
             objective = objective + norm([kron(eye(N+1),obj.Q_reg)* Phi_x;kron(eye(N+1),obj.R_reg)* Phi_u],'fro')^2;
-            
+
             % Initialise the constraints
             constraints = X0 == Z(:,1);
-            
+
             % Add structure constraints for Phi_x and Phi_u
             for k = 1 : N
                 constraints = [constraints, Phi_x( (k - 1)*nx + 1: k*nx, k*nx + 1: end) == zeros(nx, (N + 1 - k)*nx)];
             end
-            
+
             for k = 1 : N
                 constraints = [constraints, Phi_u( (k - 1)*nu + 1: k*nu, k*nx + 1: end) == zeros(nu, (N + 1 - k)*nx)];
             end
-            
+
             % Define block downshift operator
-            Z_block = kron(diag(ones(1,N),-1), eye(nx));
-            ZA_block = Z_block*blkdiag(kron(eye(N), A), zeros(nx, nx));
-            ZB_block = Z_block*blkdiag(kron(eye(N), B), zeros(nx, nu));
-            Id = eye((N + 1)*nx);
-            
+            Z_block = sparse(kron(diag(ones(1,N),-1), eye(nx)));
+            ZA_block = sparse(Z_block*blkdiag(kron(eye(N), A), zeros(nx, nx)));
+            ZB_block = sparse(Z_block*blkdiag(kron(eye(N), B), zeros(nx, nu)));
+            Id = sparse(eye((N + 1)*nx));
+
             % Add System Level Parametrisation constraint
             constraints = [constraints, (Id - ZA_block)*Phi_x - ZB_block*Phi_u == Sigma_mat];
-            
+
             % Add initial state constraint
             constraints = [ constraints, Z(:,1)==X0 ];
-            
+
             % Add state dynamics constraints
             for k=1:N
                 constraints = [ constraints, Z(:,k+1)==A*Z(:,k)+B*V(:,k)];
             end
-            
+
             % Add state and input constraints
             C = m.C;
             d = m.d;
@@ -116,8 +116,8 @@ classdef YALMIP_SLS < OCP
                     constraints = [constraints, LHS <= b];
                 end
             end
-            
-            % % terminal constraint 
+
+            % % terminal constraint
             % Ft= X_f(:,1:nx);
             % bt = X_f(:,nx+1);
             % nFt = length(bt);
@@ -129,8 +129,12 @@ classdef YALMIP_SLS < OCP
             %     end
             %     constraints = [constraints, LHS <= b];
             % end
-       
-            options = sdpsettings('verbose',0,'solver',solver);
+            if strcmp(solver, 'gurobi')
+                options = sdpsettings('verbose',0,'solver',solver,...
+                    'gurobi.FeasibilityTol', obj.CONV_EPS);
+            elseif strcmp(solver, 'mosek')
+                options = sdpsettings('verbose',0,'solver',solver);
+            end
             obj.yalmip_solve = optimizer(constraints,objective,options,[X0],V(:,1));
 
         end

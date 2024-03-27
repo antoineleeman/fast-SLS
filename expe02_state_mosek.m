@@ -22,7 +22,7 @@ for mm = 1:1:7
     Q = 3*eye(msd.nx);
     R = eye(msd.nu);
     Qf = Q;
-    solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'mosek'); 
+    solver_yalmip = YALMIP_SLS(N,Q,R,msd,Qf,'mosek');
     timings_mm_yalmip = [];
     for ii=1:n_sample
         x0 =2*rand(msd.nx,1)-1;
@@ -35,3 +35,4 @@ for mm = 1:1:7
 end
 
 save(getUniqueName('timings_M_mosek'),'timings_M_mosek','msd','N','n_sample')
+save('data/timings_M_mosek.mat','timings_M_mosek','msd')
