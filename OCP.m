@@ -26,8 +26,12 @@ classdef OCP
 
         Q_reg;
         R_reg;
+
+        CONV_EPS;
+        obj.CONV_EPS = 1e-8;
+
     end
-    
+
     methods
         function obj = OCP(N,Q,R,m,Qf)
             obj.N = N;
@@ -40,7 +44,7 @@ classdef OCP
             obj.Q_reg = 1e-3*eye(size(Q));
             obj.R_reg = 1e-3*eye(size(R));
         end
-        
+
         function cost = getStageCost(obj,x,u)
             cost=x'*obj.Q*x + u'*obj.R*u;
         end
