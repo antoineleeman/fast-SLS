@@ -38,7 +38,6 @@ classdef KKT_SLS < OCP
         eta_kj;
         mu_current;
         K_current;
-        CONV_EPS;
         MAX_ITER;
     end
 
