@@ -15,7 +15,7 @@
 %%
 addpath('util');
 
-gurobi_installed = false;
+gurobi_installed = true;
 mosek_installed = true;
 % gurobi and mosek may fail to solve the largest instanciations of the
 % problem below depending on the computer used
@@ -26,7 +26,7 @@ expe03_fast_SLS % evaluation of the number of iteration required until convergen
 
 %% solvers comparison for increasing horizon length
 expe01_horizon_fast_SLS %casadi required!
-if gurobi_installed 
+if gurobi_installed
     expe01_horizon_gurobi % not tested yet
 end
 if mosek_installed
