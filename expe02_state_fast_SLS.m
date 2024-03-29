@@ -32,7 +32,7 @@ for mm = 1:10:80
         x0 =2*rand(msd.nx,1)-1;
         [feasible,it, time1,time2] = kkt.solve(x0);
         if feasible
-            timing_mm_kkt = [timing_mm_kkt;time2+time1];to 
+            timing_mm_kkt = [timing_mm_kkt;time2+time1];
             timing_ff = [timing_ff; time1];
             IT_M_kkt = [IT_M_kkt,it];
         end

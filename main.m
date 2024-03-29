@@ -15,7 +15,7 @@
 %%
 addpath('util');
 
-gurobi_installed = false;
+gurobi_installed = true;
 mosek_installed = true;
 % gurobi and mosek may fail to solve the largest instanciations of the
 % problems below depending on the computer used

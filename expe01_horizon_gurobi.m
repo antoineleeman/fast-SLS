@@ -33,4 +33,4 @@ for nn=1:1:10
     timings_N_gurobi = [timings_N_gurobi,[nn; mean(timing_yal);std(timing_yal)]];
 end
 save(getUniqueName('timings_N_gurobi'),'timings_N_gurobi','msd')
-save('gurobi-sls-N.mat','timings_N_gurobi','msd')
+save('data/gurobi-sls-N.mat','timings_N_gurobi','msd');
