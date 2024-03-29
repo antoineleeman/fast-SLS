@@ -15,10 +15,10 @@
 %%
 addpath('util');
 
-gurobi_installed = true;
+gurobi_installed = false;
 mosek_installed = true;
 % gurobi and mosek may fail to solve the largest instanciations of the
-% problem below depending on the computer used
+% problems below depending on the computer used
 
 %% Casadi required for this section ! %
 % expe00_fast_SLS % simulation with double integrator
