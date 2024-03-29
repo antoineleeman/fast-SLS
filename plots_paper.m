@@ -75,8 +75,8 @@ errorbar(timings_M_kkt_ff(1,:), timings_M_kkt_ff(2,:), timings_M_kkt_ff(3,:),'Li
 
 plot(timings_M_gurobi(1,:), timings_M_gurobi(2,:),'LineWidth',2,'Color', colors(3,:),'Marker','+');
 plot(timings_M_mosek(1,:), timings_M_mosek(2,:),'LineWidth',2,'Color', colors(4,:),'Marker','+');
-plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/300000, 'LineWidth', 2, 'Linestyle',':', 'DisplayName', '$\mathcal{O}(n_x^3)$', 'Color', [.5 .5 .5]);
-h = plot(timings_M_gurobi(1,:), timings_M_gurobi(1,:).^3/10, 'LineWidth',2,'Linestyle',':',  'Color', [.5 .5 .5]);
+plot(timings_M_kkt(1,:), timings_M_kkt(1,:).^3/1000000, 'LineWidth', 2, 'Linestyle',':', 'DisplayName', '$\mathcal{O}(n_x^3)$', 'Color', [.5 .5 .5]);
+h = plot(timings_M_gurobi(1,:), timings_M_gurobi(1,:).^3/300, 'LineWidth',2,'Linestyle',':',  'Color', [.5 .5 .5]);
 set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
 

@@ -16,7 +16,7 @@
 init
 timings_M_mosek = [];
 n_sample = 3;
-for mm = 1:2:17 
+for mm = 1:2:11
     mm
     msd = ChainOfMassSpringDampers_actuated(mm);
     Q = 3*eye(msd.nx);

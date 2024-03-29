@@ -16,7 +16,7 @@
 init;
 n_sample = 3;
 timings_N_gurobi = [];
-for nn=1:1:10
+for nn=1:1:6
     nn
     solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'gurobi');
     timing_yal = [];

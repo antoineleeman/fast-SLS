@@ -16,7 +16,6 @@
 classdef KKT_SLS < OCP
     %All the KKT related functions for the SLS problem
     properties
-        current_bo;
         current_adj_corr;
         solver_forward;
         current_nominal;
@@ -44,7 +43,6 @@ classdef KKT_SLS < OCP
     methods
         function obj = KKT_SLS(N,Q,R,m,Qf)
             obj@OCP(N,Q,R,m,Qf);
-            obj.current_bo = zeros(m.ni,N+1); % there should not be a bo for the last input!
             obj.epsilon = 1e-10;
 
             obj = obj.initialize_solver_forward('osqp');

@@ -15,17 +15,21 @@
 %%
 addpath('util');
 
-gurobi_installed = true;
+gurobi_installed = false;
 mosek_installed = true;
+casadi_installed = false;
 % gurobi and mosek may fail to solve the largest instanciations of the
 % problems below depending on the computer used
 
 %% Casadi required for this section ! %
-% expe00_fast_SLS % simulation with double integrator
-expe03_fast_SLS % evaluation of the number of iteration required until convergence
-
+expe00_fast_SLS % simulation with double integrator
+if casadi_installed
+    expe03_fast_SLS % evaluation of the number of iteration required until convergence
+end
 %% solvers comparison for increasing horizon length
-expe01_horizon_fast_SLS %casadi required!
+if casadi_installed
+    expe01_horizon_fast_SLS
+end
 if gurobi_installed
     expe01_horizon_gurobi % not tested yet
 end
@@ -34,7 +38,9 @@ if mosek_installed
 end
 
 %% solvers comparison for increasing state dimension
-expe02_state_fast_SLS %casadi required!
+if casadi_installed
+    expe02_state_fast_SLS
+end
 if gurobi_installed
     expe02_state_gurobi
 end
@@ -43,11 +49,14 @@ if mosek_installed
 end
 
 %% sanity check: all solvers should return the same optimal solution
-if mosek_installed
+if mosek_installed && casadi_installed
     expe04
 end
 
 %% Plot all the results
+if ~casadi_installed
+    disp('Warning: The proposed method relies on Casadi. Install it to be able to plot new results.');
+end
 
 if ~mosek_installed
     disp('Warning: As Mosek is not installed, the related data have not been updated in the plots');
