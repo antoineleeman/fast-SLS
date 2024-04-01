@@ -45,15 +45,16 @@ set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
 
 
-l1 = legend('fast-SLS','fast-SLS: riccati','gurobi','mosek','$\mathcal{O}(N^2)$','$\mathcal{O}(N^{3})$','interpreter','latex','FontSize',fontsize);
+l1 = legend('fast-SLS','fast-SLS: Riccati','gurobi','mosek','$\mathcal{O}(N^2)$','$\mathcal{O}(N^{3})$','interpreter','latex','FontSize',fontsize);
 l1.Position = [0.3092 0.5775 0.1621 0.3283];
 set(l1, 'Box', 'off', 'Color', 'none');
 set(gca,'FontSize',12);
 
 xlabel('Horizon length N','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');
+xticks([1 10 80]);
 grid on;
-axis([timings_N_exact_kkt(1,1), timings_N_exact_kkt(1,end)+10, 0.001, 100])
+axis([timings_N_exact_kkt(1,1), timings_N_exact_kkt(1,end)+10, 0.0001, 100])
 
 load('data/timings_M_mosek');
 load('data/timings_M_gurobi');
@@ -82,15 +83,15 @@ set(get(get(h, 'Annotation'), 'LegendInformation'), 'IconDisplayStyle', 'off');
 
 set(gca, 'YScale', 'log')
 set(gca, 'XScale', 'log')
-l2 = legend('fast-SLS','fast-SLS: riccati','gurobi','mosek','$\mathcal{O}(n_x^3)$','interpreter','latex','FontSize',fontsize);
+l2 = legend('fast-SLS','fast-SLS: Riccati','gurobi','mosek','$\mathcal{O}(n_x^3)$','interpreter','latex','FontSize',fontsize);
 set(l2, 'Box', 'off', 'Color', 'none');
 
 xlabel('Number of states $n_x$','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');
 grid on;
 
-axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.005, 150])
-xticks([2 10^1 70]);
+axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.0009, 150])
+xticks([2 10^1 100]);
 set(gca,'FontSize',12);
 set(gcf,'units','centimeters','Position', [0 0 16.1*2 10]);
 exportgraphics(gcf,strcat('img/fig4.pdf'),'ContentType','vector');
