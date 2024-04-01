@@ -90,7 +90,7 @@ xlabel('Number of states $n_x$','interpreter','latex');
 ylabel('Computation time [s]','interpreter','latex');
 grid on;
 
-axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.0009, 150])
+axis([timings_M_kkt(1,1), timings_M_kkt(1,end)+10, 0.0001, 150])
 xticks([2 10^1 100]);
 set(gca,'FontSize',12);
 set(gcf,'units','centimeters','Position', [0 0 16.1*2 10]);

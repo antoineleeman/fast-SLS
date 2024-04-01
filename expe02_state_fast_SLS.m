@@ -41,5 +41,5 @@ for mm = 1:10:80
     timings_M_kkt_ff = [timings_M_kkt_ff,[msd.nx; mean(timing_ff);std(timing_ff)]];
 end
 
-% save(getUniqueName('timings_M_kkt'),'timings_M_kkt','timings_M_kkt_ff','IT_M_kkt','msd','N','n_sample')
-% save('data/timings_M_kkt.mat','timings_M_kkt','timings_M_kkt_ff','msd','N','n_sample');
+save(getUniqueName('timings_M_kkt'),'timings_M_kkt','timings_M_kkt_ff','IT_M_kkt','msd','N','n_sample')
+save('data/timings_M_kkt.mat','timings_M_kkt','timings_M_kkt_ff','msd','N','n_sample');
