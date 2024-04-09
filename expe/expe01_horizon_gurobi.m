@@ -1,4 +1,4 @@
-% File: expe01_horizon_mosek.m
+% File: expe01_horizon_gurobi.m
 % Author: Antoine Leeman (aleeman(at)ethz(dot)ch)
 % Date: 06th March 2024
 % License: MIT
@@ -13,24 +13,24 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-init
-timings_N_mosek = [];
+init;
 n_sample = 3;
-for nn=1:2:10
+timings_N_gurobi = [];
+for nn=1:1:6
     nn
-    solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'mosek');
+    solver_yalmip = YALMIP_SLS(nn,Q,R,msd,Qf,'gurobi');
     timing_yal = [];
     for ii =1:n_sample
         x0 =X0(:,ii);
         [feasible, ~, time] = solver_yalmip.solve(x0);
-            if feasible
-                timing_yal = [timing_yal;time];
-            end
+        if feasible
+            timing_yal = [timing_yal;time];
+        end
     end
     if time> 60
         break
     end
-    timings_N_mosek = [timings_N_mosek,[nn; mean(timing_yal);std(timing_yal)]];
+    timings_N_gurobi = [timings_N_gurobi,[nn; mean(timing_yal);std(timing_yal)]];
 end
-save(getUniqueName('timings_N_mosek'),'timings_N_mosek','msd')
-save('data/mosek-sls-N.mat','timings_N_mosek','msd')
+save(getUniqueName('timings_N_gurobi'),'timings_N_gurobi','msd')
+save('../data/gurobi-sls-N.mat','timings_N_gurobi','msd');

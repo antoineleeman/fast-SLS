@@ -9,5 +9,5 @@ function [output] = getUniqueName(str)
     currentDateTimeString = strrep(currentDateTimeString, ':', '_');
     currentDateTimeString = strrep(currentDateTimeString, ' ', '_');
     
-    output = strcat(currentDateTimeString,'__',str,'.mat');
+    output = strcat('../data/',currentDateTimeString,'__',str,'.mat');
 end

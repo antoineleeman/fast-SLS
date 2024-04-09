@@ -39,4 +39,4 @@ length(it_kkt)/n_sample
 histogram(it_kkt)
 
 save(getUniqueName('it_kkt'),'it_kkt','msd');
-save('data/it_kkt.mat','it_kkt','msd');
+save('../data/it_kkt.mat','it_kkt','msd');

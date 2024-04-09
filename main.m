@@ -13,16 +13,22 @@
 % Link: https://arxiv.org/abs/2401.13762
 % -----------------------------------------------------------------------------
 %%
-addpath('util');
+addpath('util/'); % contains utility functions
+addpath('sys/'); % contains the system dynamics
+addpath('solver/'); % contains the Riccati-based SLS solver, and the yalmip interface to Mosek and Gurobi
+addpath('expe/'); % contains the experiements used in the paper
+addpath('img/'); % contains the image generated from the experiments, used in the paper
+addpath('data/'); % contains the data created by the experiments
 
-gurobi_installed = false;
+
+gurobi_installed = true;
 mosek_installed = true;
-casadi_installed = false;
+casadi_installed = true;
 % gurobi and mosek may fail to solve the largest instanciations of the
 % problems below depending on the computer used
 
 %% Casadi required for this section ! %
-expe00_fast_SLS % simulation with double integrator
+% expe00_fast_SLS % simulation with double integrator (not used in paper)
 if casadi_installed
     expe03_fast_SLS % evaluation of the number of iteration required until convergence
 end
@@ -57,7 +63,6 @@ end
 if ~casadi_installed
     disp('Warning: The proposed method relies on Casadi. Install it to be able to plot new results.');
 end
-
 if ~mosek_installed
     disp('Warning: As Mosek is not installed, the related data have not been updated in the plots');
 end

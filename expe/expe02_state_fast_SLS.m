@@ -42,4 +42,4 @@ for mm = 1:10:80
 end
 
 save(getUniqueName('timings_M_kkt'),'timings_M_kkt','timings_M_kkt_ff','IT_M_kkt','msd','N','n_sample')
-save('data/timings_M_kkt.mat','timings_M_kkt','timings_M_kkt_ff','msd','N','n_sample');
+save('../data/timings_M_kkt.mat','timings_M_kkt','timings_M_kkt_ff','msd','N','n_sample');

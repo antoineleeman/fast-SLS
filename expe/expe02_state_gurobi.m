@@ -36,4 +36,4 @@ for mm = 1:1:7
 end
 
 save(getUniqueName('timings_M_gurobi'),'timings_M_gurobi','msd','N','n_sample')
-save('data/timings_M_gurobi.mat','timings_M_gurobi','msd','N','n_sample');
+save('../data/timings_M_gurobi.mat','timings_M_gurobi','msd','N','n_sample');

@@ -35,4 +35,4 @@ for mm = 1:2:11
 end
 
 save(getUniqueName('timings_M_mosek'),'timings_M_mosek','msd','N','n_sample')
-save('data/timings_M_mosek.mat','timings_M_mosek','msd')
+save('../data/timings_M_mosek.mat','timings_M_mosek','msd')

@@ -38,4 +38,4 @@ for nn=1:10:80
 end
 
 save(getUniqueName('timings_N_exact_kkt'),'timings_N_exact_kkt','timings_N_exact_ff','msd')
-save('data/fast-sls-N.mat','timings_N_exact_kkt','timings_N_exact_ff','msd');
+save('../data/fast-sls-N.mat','timings_N_exact_kkt','timings_N_exact_ff','msd');
