@@ -3,7 +3,7 @@ This repository contains the MATLAB code that accompanies the research paper:
 > Leeman, Antoine P and Kohler, Johannes and Messerer, Florian and Lahr, Amon and Diehl, Moritz and Zeilinger, Melanie N “Fast System Level Synthesis: Robust Model Predictive Control using Riccati Recursions” 
 > arXiv preprint arXiv:2401.13762, 2024.
 
-![Project Image](fig4.png)
+![Project Image](img/fig4.png)
 
 The paper is freely available on [arXiv](https://arxiv.org/abs/2401.13762) 
 
