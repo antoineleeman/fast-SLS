@@ -34,7 +34,7 @@ classdef Rocket_2D < LinearSystem
             obj.nu=2;
 
             obj.ni = 16;
-            obj.ni_x =12;
+            obj.ni_x =16;
 
             obj.nw = 6; % todo: faster code if we implement for nw < nx
             
@@ -45,7 +45,9 @@ classdef Rocket_2D < LinearSystem
             a = obj.a;
             k_th = obj.k_th;
             I = obj.I;
-            obj.E = diag([0, sig_w, 0,0,0,sig_w,0]);
+            obj.E = diag([0, sig_w, 0,0,0,sig_w]) + 0.001*eye(6);
+            fprintf('Uncertainty matrix used:\n');
+            disp(obj.E);
             obj.A =[1, dt,0,  0, 0,  0;
                          0,  1, dt*k_x,  0, 0,  0;
                          0,  0,      1, dt, 0,  0;
@@ -65,7 +67,6 @@ classdef Rocket_2D < LinearSystem
             Hx = kron(eye(size(A, 1)), [1; -1]);
             hx = [15.0; 15.0; 6.0; 6.0; 25.0; 25.0; 8.0; 8.0; 15.0; 0.0; 6.0; 6.0];
 
-
             Hu = kron(eye(size(B, 2)), [1; -1]);
             hu = [ones(2, 1) * 15;
                   ones(2, 1) * 8];
@@ -73,8 +74,10 @@ classdef Rocket_2D < LinearSystem
             obj.C = blkdiag(Hx, Hu);
             
             obj.d = [hx; hu];
-            obj.Cf = Hx;
-            obj.df = hx;
+            obj.Cf = [eye(obj.nx);
+                -eye(obj.nx);
+                [zeros(2*obj.nu,obj.nx) ]]; % no terminal constraint
+            obj.df = [hx;ones(2*obj.nu,1)];
         end
 
     end
