@@ -54,7 +54,7 @@ classdef KKT_SLS < OCP
             obj.MAX_ITER = 30;
         end
 
-        function [feasible,ii, time1, time2,delta, V0] = solve(obj,x0)
+        function [feasible,ii, time1, time2,delta, V0, it_data] = solve(obj,x0)
 
             m = obj.m;
             N = obj.N;
@@ -63,9 +63,10 @@ classdef KKT_SLS < OCP
             MAX_ITER = obj.MAX_ITER;
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
-            it_x = cell(MAX_ITER,1);
-            it_u = cell(MAX_ITER,1);
+            % it_x = cell(MAX_ITER,1);
+            % it_u = cell(MAX_ITER,1);
             delta = cell(MAX_ITER,1);
+            it_data = struct();
 
             feasible = false;
             obj.ubg_current = obj.nominal_ubg;
@@ -88,8 +89,12 @@ classdef KKT_SLS < OCP
                         rethrow(e);
                     end
                 end
-                it_x{ii} = x_bar;
-                it_u{ii} = u_bar;
+                % it_x{ii} = x_bar;
+                % it_u{ii} = u_bar;
+                
+                it_data(ii).x = x_bar;
+                it_data(ii).u = u_bar;
+                it_data(ii).bo_j = obj.bo_j;
 
                 % delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
                 delta{ii} = full(norm([current_x- x_bar; [current_u- u_bar, zeros(m.nu,1)]],'inf'));
@@ -97,6 +102,7 @@ classdef KKT_SLS < OCP
                     disp('converged to an optimal solution');
                     feasible =true;
                     V0 = current_u(:,1);
+                    it_data(1).n_iter = ii;
                     return;
                 else
                     current_x = x_bar;
@@ -110,8 +116,10 @@ classdef KKT_SLS < OCP
                 [obj, ~, t1] = obj.backward_solve();
                 time1 = time1+t1;
                 tic;
-                [obj,~] = obj.update_backoff();
+                [obj,~, Phi_x, Phi_u] = obj.update_backoff();
                 t = toc;
+                it_data(ii).Phi_x = Phi_x;
+                it_data(ii).Phi_u = Phi_u;
                 time2 = time2+t;
             end
             disp('no feasible solution found');
@@ -225,7 +233,7 @@ classdef KKT_SLS < OCP
             tic;
             for jj=1:N-1
                 eta_Nj = obj.eta_kj{N-1,jj}(1:1:m.ni_x);
-                S{N,jj} = C_f' * diag(eta_Nj) *C_f+ obj.Q_reg;
+                S{N,jj} = C_f' * diag(eta_Nj) *C_f+ obj.Q_reg_f;
 
                 for kk=N-1:-1:jj
                     Ck = C'*diag(obj.eta_kj{kk,jj})*C;
@@ -241,7 +249,7 @@ classdef KKT_SLS < OCP
             obj.K_current = K;
         end
 
-        function [obj, bo_j] = update_backoff(obj)
+        function [obj, bo_j, Phi_x_kj, Phi_u_kj] = update_backoff(obj)
             m=obj.m;
             N = obj.N;
             nx = m.nx;

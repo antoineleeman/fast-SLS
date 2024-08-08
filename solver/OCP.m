@@ -25,6 +25,7 @@ classdef OCP
         xf;
 
         Q_reg;
+        Q_reg_f;
         R_reg;
 
         CONV_EPS;
@@ -40,6 +41,7 @@ classdef OCP
             obj.Qf = Qf;
 
             obj.Q_reg = 1e-3*eye(size(Q));
+            obj.Q_reg_f = 1e-2*eye(size(Q));
             obj.R_reg = 1e-3*eye(size(R));
 
             obj.CONV_EPS = 1e-6;
