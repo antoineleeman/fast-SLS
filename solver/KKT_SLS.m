@@ -63,8 +63,6 @@ classdef KKT_SLS < OCP
             MAX_ITER = obj.MAX_ITER;
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
-            % it_x = cell(MAX_ITER,1);
-            % it_u = cell(MAX_ITER,1);
             delta = cell(MAX_ITER,1);
             it_data = struct();
 
@@ -89,14 +87,11 @@ classdef KKT_SLS < OCP
                         rethrow(e);
                     end
                 end
-                % it_x{ii} = x_bar;
-                % it_u{ii} = u_bar;
                 
                 it_data(ii).x = x_bar;
                 it_data(ii).u = u_bar;
                 it_data(ii).bo_j = obj.bo_j;
 
-                % delta{ii} = full(max(max(max(current_x-x_bar)),max(max(current_u-u_bar))));
                 delta{ii} = full(norm([current_x- x_bar; [current_u- u_bar, zeros(m.nu,1)]],'inf'));
                 if delta{ii} <= obj.CONV_EPS
                     disp('converged to an optimal solution');
