@@ -1,6 +1,6 @@
 % File: Rocket_2D.m
 % Author: Antoine Leeman (aleeman(at)ethz(dot)ch)
-% Date: 06th March 2024
+% Date: 09th August 2024
 % License: MIT
 % Reference:
 %{
@@ -14,7 +14,7 @@
 % -----------------------------------------------------------------------------
 %%
 classdef Rocket_2D < LinearSystem
-
+% Dynamics taken from: https://arxiv.org/pdf/2406.12573
     properties
        L = 1.4
         m = 1.1
@@ -26,8 +26,8 @@ classdef Rocket_2D < LinearSystem
     end
     methods
         function obj = Rocket_2D()
-            obj.I = obj.m * obj.L^2 / 3;  % Correct calculation of I
-            obj.a = obj.m * obj.g * obj.L / (2 * obj.I);  % Correct calculation of a
+            obj.I = obj.m * obj.L^2 / 3; 
+            obj.a = obj.m * obj.g * obj.L / (2 * obj.I); 
 
 
             obj.nx=6;
@@ -76,7 +76,7 @@ classdef Rocket_2D < LinearSystem
             obj.d = [hx; hu];
             obj.Cf = [eye(obj.nx);
                 -eye(obj.nx);
-                [zeros(2*obj.nu,obj.nx) ]]; % no terminal constraint
+                [zeros(2*obj.nu,obj.nx) ]];
             obj.df = [hx;ones(2*obj.nu,1)];
         end
 
