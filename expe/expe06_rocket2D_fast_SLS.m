@@ -1,6 +1,6 @@
-% File: expe05_rocket2D_fast_SLS.m
+% File: expe06_rocket2D_fast_SLS.m
 % Author: Antoine Leeman (aleeman(at)ethz(dot)ch)
-% Date: 06th March 2024
+% Date: 14th August 2024
 % License: MIT
 % Reference:
 %{
@@ -22,4 +22,4 @@ N = 25;
 
 x0 = [10; 0; 0; 0; 12.5; 0];
 kkt = KKT_SLS(N,Q,R,m,Qf);
-[feasible,it] = kkt.solve(x0);
+[solution,it_data] = kkt.solve(x0);

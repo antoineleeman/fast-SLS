@@ -54,7 +54,7 @@ classdef KKT_SLS < OCP
             obj.MAX_ITER = 30;
         end
 
-        function [feasible,ii, time1, time2,delta, V0, it_data] = solve(obj,x0)
+        function [solution, it_data] = solve(obj,x0)
 
             m = obj.m;
             N = obj.N;
@@ -63,22 +63,22 @@ classdef KKT_SLS < OCP
             MAX_ITER = obj.MAX_ITER;
             current_x = zeros(m.nx,N+1);
             current_u = zeros(m.nu,N);
-            delta = cell(MAX_ITER,1);
             it_data = struct();
+            solution = struct();
 
-            feasible = false;
+            solution.feasible = false;
             obj.ubg_current = obj.nominal_ubg;
             obj.beta_kj = obj.epsilon.*ones(N-1,N-1,ni);
-            time1 = 0;
-            time2 = 0;
+            solution.timeRiccatiControllerUpdate = 0;
+            solution.timeTotalWithoutRiccatiControllerUpdate = 0;
 
-            V0 = nan(m.nu,1);
+            solution.V0 = nan(m.nu,1);
             for ii=1:MAX_ITER
                 try
                     tic
                     [obj, ~,x_bar, u_bar, ~, ~] = obj.forward_solve(x0);
                     t = toc;
-                    time2 = time2+t;
+                    solution.timeTotalWithoutRiccatiControllerUpdate = solution.timeTotalWithoutRiccatiControllerUpdate+t;
                 catch e
                     if contains(e.message, 'error_on_fail')
                         disp('infeasible forward solve');
@@ -92,12 +92,12 @@ classdef KKT_SLS < OCP
                 it_data(ii).u = u_bar;
                 it_data(ii).bo_j = obj.bo_j;
 
-                delta{ii} = full(norm([current_x- x_bar; [current_u- u_bar, zeros(m.nu,1)]],'inf'));
-                if delta{ii} <= obj.CONV_EPS
+                it_data(ii).delta = full(norm([current_x- x_bar; [current_u- u_bar, zeros(m.nu,1)]],'inf'));
+                if it_data(ii).delta <= obj.CONV_EPS
                     disp('converged to an optimal solution');
-                    feasible =true;
-                    V0 = current_u(:,1);
-                    it_data(1).n_iter = ii;
+                    solution.feasible =true;
+                    solution.V0 = full(current_u(:,1));
+                    solution.n_iter = ii;
                     return;
                 else
                     current_x = x_bar;
@@ -106,16 +106,16 @@ classdef KKT_SLS < OCP
                 tic
                 obj = obj.update_cost_tube();
                 t = toc;
-                time2 = time2+t;
+                solution.timeTotalWithoutRiccatiControllerUpdate = solution.timeTotalWithoutRiccatiControllerUpdate+t;
 
                 [obj, ~, t1] = obj.backward_solve();
-                time1 = time1+t1;
+                solution.timeRiccatiControllerUpdate = solution.timeRiccatiControllerUpdate+t1;
                 tic;
                 [obj,~, Phi_x, Phi_u] = obj.update_backoff();
                 t = toc;
                 it_data(ii).Phi_x = Phi_x;
                 it_data(ii).Phi_u = Phi_u;
-                time2 = time2+t;
+                solution.timeTotalWithoutRiccatiControllerUpdate = solution.timeTotalWithoutRiccatiControllerUpdate+t;
             end
             disp('no feasible solution found');
 
