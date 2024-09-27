@@ -5,7 +5,7 @@ This repository contains the MATLAB code that accompanies the research paper:
 
 ![Project Image](img/fig4.png)
 
-The paper is available [online](https://www.sciencedirect.com/science/article/pii/S240589632401406X) and was recognized as a finalist for the Young Author Award.
+The paper is available [online](https://www.sciencedirect.com/science/article/pii/S240589632401406X) and was recognized as a finalist for the [Young Author Award](https://nmpc2024.org/YoungAuthor.html).
 
 ## Prerequisites
 - MATLAB (tested with version R2023b running on Macbook Pro with M1 processor with 8 cores and 16GB of RAM running macOS Sonoma)
