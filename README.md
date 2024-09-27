@@ -1,11 +1,11 @@
 # Fast System Level Synthesis: Robust Model Predictive Control using Riccati Recursions
 This repository contains the MATLAB code that accompanies the research paper:
 > Leeman, Antoine P and Kohler, Johannes and Messerer, Florian and Lahr, Amon and Diehl, Moritz and Zeilinger, Melanie N “Fast System Level Synthesis: Robust Model Predictive Control using Riccati Recursions” 
-> arXiv preprint arXiv:2401.13762, 2024.
+> IFAC Conference on Nonlinear Model Predictive Control (NMPC), 58(18), 173-180, 2024.
 
 ![Project Image](img/fig4.png)
 
-The paper is freely available on [arXiv](https://arxiv.org/abs/2401.13762) 
+The paper is available [online](https://www.sciencedirect.com/science/article/pii/S240589632401406X) and was recognized as a finalist for the Young Author Award.
 
 ## Prerequisites
 - MATLAB (tested with version R2023b running on Macbook Pro with M1 processor with 8 cores and 16GB of RAM running macOS Sonoma)
@@ -51,11 +51,17 @@ This project is licensed under the MIT License.
 
 If you use this code in your research, please cite our paper:
   ```
-@article{leeman2024fast,
-  title={Fast System Level Synthesis: Robust Model Predictive Control using Riccati Recursions},
-  author={Leeman, Antoine P and K{\"o}hler, Johannes and Messerer, Florian and Lahr, Amon and Diehl, Moritz and Zeilinger, Melanie N},
-  journal={arXiv preprint arXiv:2401.13762},
-  year={2024}
+@inproceedings{LEEMAN2024_fastSLS,
+title = {Fast System Level Synthesis: Robust Model Predictive Control using Riccati Recursions},
+booktitle={IFAC Conference on Nonlinear Model Predictive Control (NMPC)},
+volume = {58},
+number = {18},
+pages = {173-180},
+year = {2024},
+issn = {2405-8963},
+doi = {https://doi.org/10.1016/j.ifacol.2024.09.027},
+author = {Antoine P. Leeman and Johannes Kohler and Florian Messerer and Amon Lahr and Moritz Diehl and Melanie N. Zeilinger},
+keywords = {Optimization and Model Predictive Control, Robust Model Predictive Control, Real-Time Implementation of Model Predictive Control},
 }
   ```
   
