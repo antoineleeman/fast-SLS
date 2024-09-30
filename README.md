@@ -51,16 +51,16 @@ This project is licensed under the MIT License.
 
 If you use this code in your research, please cite our paper:
   ```
-@inproceedings{LEEMAN2024_fastSLS,
-title = {Fast System Level Synthesis: Robust Model Predictive Control using Riccati Recursions},
-booktitle={IFAC Conference on Nonlinear Model Predictive Control (NMPC)},
+@article{LEEMAN2024_fastSLS,
+title = {Fast System Level Synthesis: Robust Model Predictive Control using {Riccati} Recursions},
+journal = {IFAC-PapersOnLine (Conference on Nonlinear MPC)},
 volume = {58},
 number = {18},
 pages = {173-180},
 year = {2024},
 issn = {2405-8963},
 doi = {https://doi.org/10.1016/j.ifacol.2024.09.027},
-author = {Antoine P. Leeman and Johannes Kohler and Florian Messerer and Amon Lahr and Moritz Diehl and Melanie N. Zeilinger},
+author = {Antoine P. Leeman and Johannes K{\"o}hler and Florian Messerer and Amon Lahr and Moritz Diehl and Melanie N. Zeilinger},
 keywords = {Optimization and Model Predictive Control, Robust Model Predictive Control, Real-Time Implementation of Model Predictive Control},
 }
   ```
